@@ -367,19 +367,19 @@ namespace BTCSIM2
             {
                 var price_change_ratio = holding_data.holding_side == "buy" ? (close - holding_data.holding_price) / holding_data.holding_price : (holding_data.holding_price - close) / holding_data.holding_price;
                 performance_data.unrealized_pl = holding_data.holding_side == "buy" ? (close - holding_data.holding_price) * holding_data.holding_size : (holding_data.holding_price - close) * holding_data.holding_size;
-                performance_data.total_pl = performance_data.realized_pl + performance_data.unrealized_pl - performance_data.total_fee;
-                performance_data.total_capital = performance_data.total_pl + performance_data.initial_capital;
+                performance_data.total_pl = Math.Round(performance_data.realized_pl + performance_data.unrealized_pl - performance_data.total_fee, 2);
+                performance_data.total_capital = Math.Round(performance_data.total_pl + performance_data.initial_capital,2);
             }
             else
             {
                 performance_data.unrealized_pl = 0.0;
                 performance_data.unrealized_pl_ratio = 0.0;
-                performance_data.total_pl = performance_data.realized_pl + performance_data.unrealized_pl - performance_data.total_fee;
-                performance_data.total_capital = performance_data.total_pl + performance_data.initial_capital;
+                performance_data.total_pl = Math.Round( performance_data.realized_pl + performance_data.unrealized_pl - performance_data.total_fee,2);
+                performance_data.total_capital = Math.Round(performance_data.total_pl + performance_data.initial_capital,2);
                 //performance_data.unrealized_pl_list = new List<double>();
             }
-            performance_data.unrealized_pl_ratio = performance_data.unrealized_pl != 0 ? performance_data.unrealized_pl / (performance_data.total_capital - performance_data.unrealized_pl) : 0;
-            performance_data.total_pl_ratio = (performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital;
+            performance_data.unrealized_pl_ratio = performance_data.unrealized_pl != 0 ? Math.Round(performance_data.unrealized_pl / (performance_data.total_capital - performance_data.unrealized_pl),4) : 0;
+            performance_data.total_pl_ratio = Math.Round((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital,4);
             performance_data.unrealized_pl_list.Add(performance_data.unrealized_pl);
             performance_data.total_capital_list.Add(performance_data.total_capital);
             performance_data.unrealized_pl_ratio_list.Add(performance_data.unrealized_pl_ratio);

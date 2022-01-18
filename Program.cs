@@ -53,7 +53,7 @@ namespace BTCSIM2
             stopWatch.Start();
             Console.WriteLine("started program.");
             RandomSeed.initialize();
-            List<int> terms = new List<int>() { 5, 10, 15, 20, 25, 30, 35, 40, 45, 50};
+            List<int> terms = new List<int>() { 2, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
             MarketData.initializer(terms);
 
             var from = 1000;
@@ -128,6 +128,12 @@ namespace BTCSIM2
                         for (int i = 0; i < func_val.Count(); i++)
                             alloc.Add(Math.Round(func_val[i] / func_val.Sum(), 6));
                     }
+                    else if (select_func_no == 6) //fair allocation
+                    {
+                        var sampling_unit = 1.0 / Convert.ToDouble(num_splits);
+                        for (int i = 0; i < num_splits; i++)
+                            alloc.Add(Math.Round(sampling_unit, 6));
+                    }
                     nanpin_lots.Add(num_splits.ToString() + "-" + select_func_no.ToString(), new List<double[]> { timing.ToArray(), alloc.ToArray() });
                 }
                 else
@@ -138,17 +144,8 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
-                var nanpin_timing = new List<double>() { 0.007, 0.014, 0.021, 0.028 };
-                var lot_splits = new List<double>() { 0.000008, 0.03334, 0.133336, 0.299996, 0.533319 };
-                var pt_ratio = 0.021;
-                var lc_ratio = 0.045;
-
-                for (int i = 0; i < 10; i++)
-                {
-                    var ac = new Account();
-                    var sim = new Sim();
-                    ac = sim.sim_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits);
-                }
+                var o = new OptNanpin();
+                o.startOptNanpin(from, to, true);
             }
             if (key == "ptlc")
             {
@@ -185,12 +182,10 @@ namespace BTCSIM2
                     var list_nanpin_lot = new List<double[]>();
                     int num_test = 10;
 
-
-                    var r = new Random();
                     var pt = new List<double>() { 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025};
                     var lc = new List<double>() { 0.04, 0.045, 0.05, 0.055, 0.06, 0.065};
                     var num_split = new List<int>() {5, 9};
-                    var func = new List<int>() {1,2,3,4,5 };
+                    var func = new List<int>() {0,1,2,3,4,5 };
                     var no = 0;
                     for (int i = 0; i < pt.Count; i++)
                     {
@@ -231,7 +226,7 @@ namespace BTCSIM2
                 var pt = Convert.ToDouble(r.Next(1, 11)) / 100.0;
                 var lc = Convert.ToDouble(r.Next(1, 11)) / 100.0;
                 var num_split = r.Next(1, 11);
-                var func = r.Next(1, 6);
+                var func = r.Next(0, 6);
                 var d = getNanpinParam(pt, lc, num_split, func);
                 var ac = new Account();
                 var sim = new Sim();
