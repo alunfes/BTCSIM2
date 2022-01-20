@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BTCSIM2
 {
@@ -53,11 +55,13 @@ namespace BTCSIM2
             stopWatch.Start();
             Console.WriteLine("started program.");
             RandomSeed.initialize();
-            List<int> terms = new List<int>() { 2, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
+            //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
+            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10};
             MarketData.initializer(terms);
 
             var from = 1000;
             var to = MarketData.Close.Count - 1;
+            //var to = 110000;
 
 
             /*
@@ -144,8 +148,10 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
-                var o = new OptNanpin();
-                o.startOptNanpin(from, to, true);
+                Parallel.For(0, 100, i =>
+                {
+                    Console.WriteLine(i);
+                });
             }
             if (key == "ptlc")
             {
@@ -160,9 +166,9 @@ namespace BTCSIM2
             else if (key == "nanpin")
             {
                 Console.WriteLine("Nanpin PT/LC random buy sell entry");
-                var nanpin_timing = new List<double>() { 0.007,0.014,0.021,0.028 }; 
-                var lot_splits = new List<double>() { 0.000008,0.03334,0.133336,0.299996,0.533319 }; 
-                var pt_ratio = 0.021;
+                var nanpin_timing = new List<double>() { 0.01, 0.02, 0.03 }; 
+                var lot_splits = new List<double>() { 0.1}; 
+                var pt_ratio = 0.013;
                 var lc_ratio = 0.045;
                 var ac = new Account();
                 var sim = new Sim();
@@ -172,65 +178,20 @@ namespace BTCSIM2
             else if (key == "opt nanpin")
             {
                 Console.WriteLine("optimize nanpin strategy parameter");
-                using (StreamWriter sw = new StreamWriter("opt nanpin.csv"))
-                {
-                    sw.WriteLine("No.,num trade,win rate,realized pl,pt,lc,num_split,func,nanpin timing,lot splits");
-                    var list_num_trade = new List<int>();
-                    var list_win_rate = new List<double>();
-                    var list_realized_pl = new List<double>();
-                    var list_nanpin_timing = new List<double[]>();
-                    var list_nanpin_lot = new List<double[]>();
-                    int num_test = 10;
-
-                    var pt = new List<double>() { 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025};
-                    var lc = new List<double>() { 0.04, 0.045, 0.05, 0.055, 0.06, 0.065};
-                    var num_split = new List<int>() {5, 9};
-                    var func = new List<int>() {0,1,2,3,4,5 };
-                    var no = 0;
-                    for (int i = 0; i < pt.Count; i++)
-                    {
-                        for (int j = 0; j < lc.Count; j++)
-                        {
-                            for (int k = 0; k < num_split.Count; k++)
-                            {
-                                for (int l = 0; l < func.Count; l++)
-                                {
-                                    var d = getNanpinParam(pt[i], lc[j], num_split[k], func[l]);
-                                    var ave_num_trade = 0.0;
-                                    var ave_win_rate = 0.0;
-                                    var ave_pl = 0.0;
-                                    for (int n = 0; n < num_test; n++)
-                                    {
-                                        var ac = new Account();
-                                        var sim = new Sim();
-                                        ac = sim.sim_nanpin_ptlc(from, to, ac, pt[i], lc[j], d.Values.ToList()[0].ToList()[0].ToList(), d.Values.ToList()[0].ToList()[1].ToList());
-                                        ave_num_trade += ac.performance_data.num_trade;
-                                        ave_pl += ac.performance_data.total_pl;
-                                        ave_win_rate += ac.performance_data.win_rate;
-                                    }
-                                    var res = no.ToString() + "," + Math.Round(ave_num_trade / num_test, 4).ToString() + "," + Math.Round(ave_win_rate / num_test, 4).ToString() + "," +
-                                        Math.Round(ave_pl / num_test, 4).ToString() + "," + pt[i].ToString() + "," + lc[j].ToString() + "," + num_split[k].ToString() + "," + func[l].ToString() + "," +
-                                        string.Join(":", d.Values.ToList()[0].ToList()[0]) + "," + string.Join(":", d.Values.ToList()[0].ToList()[1]);
-                                    sw.WriteLine(res);
-                                    Console.WriteLine(res);
-                                    no++;
-                                }
-                            }
-                        }
-                    }
-                }
+                var o = new OptNanpin();
+                o.startOptMADivNanpin(from, to, false);
             }
             else if (key == "rand")
             {
                 var r = new Random();
                 var pt = Convert.ToDouble(r.Next(1, 11)) / 100.0;
                 var lc = Convert.ToDouble(r.Next(1, 11)) / 100.0;
-                var num_split = r.Next(1, 11);
-                var func = r.Next(0, 6);
+                var num_split = r.Next(1, 16);
+                var func = r.Next(0, 7);
                 var d = getNanpinParam(pt, lc, num_split, func);
                 var ac = new Account();
                 var sim = new Sim();
-                //ac = sim.sim_nanpin_ptlc(from, to, ac, pt, lc, d.Values.ToImmutableArray()[0].ToList(), d.Values.ToImmutableArray()[1]);
+                ac = sim.sim_nanpin_ptlc(from, to, ac, pt, lc, d.Values.ToList()[0].ToList()[0].ToList(), d.Values.ToList()[0].ToList()[1].ToList());
                 displaySimResult(ac, "nanpin");
             }
             else if(key == "multi nanpin")
@@ -303,10 +264,10 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.007, 0.014, 0.021, 0.028 };
-                var lot_splits = new List<double>() { 0.000008, 0.03334, 0.133336, 0.299996, 0.533319 };
-                var pt_ratio = 0.021;
-                var lc_ratio = 0.045;
+                var nanpin_timing = new List<double>() { 0.0053,0.0107,0.016,0.0213,0.0267,0.032,0.0373,0.0427,0.048,0.0533,0.0587,0.064,0.0693,0.0747 };
+                var lot_splits = new List<double>() { 0.095339,0.094915,0.093644,0.091525,0.088559,0.084746,0.080085,0.074576,0.06822,0.061017,0.052966,0.044068,0.034322,0.023729,0.012289 };
+                var pt_ratio = 0.05;
+                var lc_ratio = 0.09;
                 var ma_term = 5;
                 var contrarian = true;
                 var ac = new Account();
