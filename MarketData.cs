@@ -78,7 +78,7 @@ namespace BTCSIM2
         static private void read_data()
         {
             var d = Directory.GetFiles(@"./Data");
-            StreamReader sr = new StreamReader(@"./Data/BTC-PERP-5m.csv");
+            StreamReader sr = new StreamReader(@"./Data/BTC-PERP-1m.csv");
             sr.ReadLine();
             while (!sr.EndOfStream)
             {

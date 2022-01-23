@@ -47,8 +47,9 @@ namespace BTCSIM2
                 Console.WriteLine("\"rand\" : Randome generated param nanpin sim");
                 Console.WriteLine("\"multi nanpin\" : Multi param nanpin sim");
                 Console.WriteLine("\"madiv nanpin\" : MA div nanpin sim");
+                Console.WriteLine("\"read sim\" : Read MA div nanpin sim");
                 key = Console.ReadLine();
-                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin")
+                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" || key == "read sim")
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -56,12 +57,12 @@ namespace BTCSIM2
             Console.WriteLine("started program.");
             RandomSeed.initialize();
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
-            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10};
+            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
             var from = 1000;
-            var to = MarketData.Close.Count - 1;
-            //var to = 110000;
+            //var to = MarketData.Close.Count - 1;
+            var to = 250000;
 
 
             /*
@@ -264,16 +265,25 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0053,0.0107,0.016,0.0213,0.0267,0.032,0.0373,0.0427,0.048,0.0533,0.0587,0.064,0.0693,0.0747 };
-                var lot_splits = new List<double>() { 0.095339,0.094915,0.093644,0.091525,0.088559,0.084746,0.080085,0.074576,0.06822,0.061017,0.052966,0.044068,0.034322,0.023729,0.012289 };
-                var pt_ratio = 0.05;
-                var lc_ratio = 0.09;
-                var ma_term = 5;
+                var nanpin_timing = new List<double>() { 0.0046,0.0092,0.0138,0.0185,0.0231,0.0277,0.0323,0.0369,0.0415,0.0462,0.0508,0.0554 };
+                var lot_splits = new List<double>() { 0.142845,0.131858,0.120871,0.109884,0.098897,0.08791,0.076923,0.065936,0.054949,0.043962,0.032975,0.021988,0.011001 };
+                var pt_ratio = 0.04;
+                var lc_ratio = 0.07;
+                var ma_term = 14;    
                 var contrarian = true;
                 var ac = new Account();
                 var sim = new Sim();
                 ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, contrarian);
                 displaySimResult(ac, "MA Div nanpin");
+            }
+            else if( key == "read sim")
+            {
+                Console.WriteLine("Read MA div nanpin Sim");
+                var read_sim_from = 250000;
+                var read_sim_to = 500000;
+                var rsim = new ReadSim();
+                rsim.startReadSim(read_sim_from, read_sim_to, to - from);
+
             }
         }
     }

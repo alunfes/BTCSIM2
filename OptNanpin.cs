@@ -89,7 +89,7 @@ namespace BTCSIM2
                 }
             }
             //do optimization search
-            using (StreamWriter writer = new StreamWriter("opt nanpin.csv", true))
+            using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
             {
                 var progress = 0.0;
@@ -178,7 +178,7 @@ namespace BTCSIM2
             {
                 //nanpin timing
                 var timing = new List<double>();
-                var unit = (lc - 0.01) / Convert.ToDouble(num_splits);
+                var unit = (lc - 0.001) / Convert.ToDouble(num_splits);
                 for (int i = 0; i < num_splits - 1; i++)
                     timing.Add(Math.Round(unit * (i + 1), 4));
 
