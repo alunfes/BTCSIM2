@@ -17,6 +17,7 @@ namespace BTCSIM2
         public double initial_capital { get; set; }
         public List<double> realized_pl_list { get; set; }
         public List<double> total_capital_list { get; set; }
+        public double total_capital_variance { get; set; }
         public List<double> buy_pl_list { get; set; }
         public List<double> sell_pl_list { get; set; }
         public double unrealized_pl { get; set; }
@@ -24,6 +25,7 @@ namespace BTCSIM2
         public double unrealized_pl_ratio { get; set; }
         public List<double> unrealized_pl_ratio_list { get; set; }
         public double total_pl_ratio { get; set; }
+        public double realized_pl_ratio_variance { get; set; }
         public List<double> buy_pl_ratio_list { get; set; }
         public List<double> sell_pl_ratio_list { get; set; }
         public double max_dd { get; set; }
@@ -44,11 +46,13 @@ namespace BTCSIM2
         {
             total_pl = 0.0;
             total_pl_ratio = 0.0;
+            realized_pl_ratio_variance = 0.0;
             total_capital = 100000.0;
             initial_capital = 100000.0;
             realized_pl = 0.0;
             realized_pl_list = new List<double>();
             total_capital_list = new List<double>();
+            total_capital_variance = 0.0;
             buy_pl_list = new List<double>();
             sell_pl_list = new List<double>();
             buy_pl_ratio_list = new List<double>();
@@ -386,6 +390,7 @@ namespace BTCSIM2
             total_pl_list.Add(performance_data.total_pl);
             total_pl_ratio_list.Add(performance_data.total_pl_ratio);
 
+
             if (performance_data.unrealized_pl_ratio < -0.3)
                 Console.WriteLine("high unrealized pl ratio!");
             performance_data.num_trade_list.Add(performance_data.num_trade);
@@ -459,6 +464,15 @@ namespace BTCSIM2
             calc_margin_data(i, close);
             performance_data.max_dd = Math.Round(performance_data.unrealized_pl_ratio_list.Min(), 6);
             performance_data.max_pl = Math.Round(performance_data.unrealized_pl_ratio_list.Max(), 6);
+            performance_data.realized_pl_ratio_variance = calcStdiv(performance_data.realized_pl_list);
+            performance_data.total_capital_variance = calcStdiv(performance_data.total_capital_list);
+            double calcStdiv(List<double> data)
+            {
+                var mean = data.Average();
+                double sum2 = data.Select(a => a * a).Sum();
+                double variance = sum2 / data.Count - mean * mean;
+                return Math.Sqrt(variance);
+            }
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
             log_data.close_log.Add(MarketData.Close[i]);

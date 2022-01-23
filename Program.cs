@@ -56,8 +56,8 @@ namespace BTCSIM2
             stopWatch.Start();
             Console.WriteLine("started program.");
             RandomSeed.initialize();
-            //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
-            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
+            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
+            //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
             var from = 1000;
@@ -265,11 +265,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0046,0.0092,0.0138,0.0185,0.0231,0.0277,0.0323,0.0369,0.0415,0.0462,0.0508,0.0554 };
-                var lot_splits = new List<double>() { 0.142845,0.131858,0.120871,0.109884,0.098897,0.08791,0.076923,0.065936,0.054949,0.043962,0.032975,0.021988,0.011001 };
-                var pt_ratio = 0.04;
-                var lc_ratio = 0.07;
-                var ma_term = 14;    
+                var nanpin_timing = new List<double>() { 0.0145 };
+                var lot_splits = new List<double>() { 0.5,0.5 };
+                var pt_ratio = 0.017;
+                var lc_ratio = 0.03;
+                var ma_term = 7;    
                 var contrarian = true;
                 var ac = new Account();
                 var sim = new Sim();

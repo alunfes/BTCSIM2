@@ -22,6 +22,8 @@ namespace BTCSIM2
         public Dictionary<int, int> res_num_sell { get; set; }
         public Dictionary<int, double> res_ave_buy_pl { get; set; }
         public Dictionary<int, double> res_ave_sell_pl { get; set; }
+        public Dictionary<int, double> res_realized_pl_variance { get; set; }
+        public Dictionary<int, double> res_total_capital_variance { get; set; }
 
         public Dictionary<int, double> para_pt { get; set; }
         public Dictionary<int, double> para_lc { get; set; }
@@ -42,6 +44,8 @@ namespace BTCSIM2
             res_num_sell = new Dictionary<int, int>();
             res_ave_buy_pl = new Dictionary<int, double>();
             res_ave_sell_pl = new Dictionary<int, double>();
+            res_realized_pl_variance = new Dictionary<int, double>();
+            res_total_capital_variance = new Dictionary<int, double>();
             para_pt = new Dictionary<int, double>();
             para_lc = new Dictionary<int, double>();
             para_num_split = new Dictionary<int, int>();
@@ -55,9 +59,9 @@ namespace BTCSIM2
         public void startOptMADivNanpin(int from, int to, bool flg_paralell)
         {
             initializer();
-            var pt = new List<double>() { 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09 };
-            var lc = new List<double>() { 0.02, 0.03, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.08, 0.09, 0.1, 0.12, 0.15, 0.17 };
-            var num_split = new List<int>() {2, 5, 9 , 15};
+            var pt = new List<double>() { 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025, 0.027, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.08, 0.09 };
+            var lc = new List<double>() { 0.01, 0.02, 0.03, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095, 0.1, 0.12, 0.15, 0.17 };
+            var num_split = new List<int>() {2, 5, 9, 12, 15};
             var func = new List<int>() { 0, 1, 2, 3, 4, 5, 6};
             var ma_term = MarketData.terms;
             var no = 0;
@@ -94,7 +98,7 @@ namespace BTCSIM2
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,realized pl,pt,lc,num_split,func,ma_term,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,realized pl,realzied pl var,total capital var,pt,lc,num_split,func,ma_term,nanpin timing,lot splits");
                 if (flg_paralell)
                 {
                     Parallel.For(0, no, i =>
@@ -111,7 +115,10 @@ namespace BTCSIM2
                         res_num_sell.Add(i, ac.performance_data.num_sell);
                         res_ave_buy_pl.Add(i, ac.performance_data.buy_pl_ratio_list.Average());
                         res_ave_sell_pl.Add(i, ac.performance_data.sell_pl_ratio_list.Average());
+                        res_realized_pl_variance.Add(i, ac.performance_data.realized_pl_ratio_variance);
+                        res_total_capital_variance.Add(i, ac.performance_data.total_capital_variance);
                         var res = n.ToString() + "," +ac.performance_data.num_trade.ToString()+","+ac.performance_data.win_rate.ToString()+","+ac.performance_data.realized_pl.ToString()+","+
+                        ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+
                         para_pt[i].ToString()+","+para_lc[i].ToString()+","+para_num_split[i].ToString()+","+para_func[i].ToString()+","+para_ma_term[i].ToString()+","+
                         string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]);
                         sw.WriteLine(res);
@@ -151,6 +158,8 @@ namespace BTCSIM2
                         res_num_trade.Add(ind, ac.performance_data.num_trade);
                         res_num_buy.Add(ind, ac.performance_data.num_buy);
                         res_num_sell.Add(ind, ac.performance_data.num_sell);
+                        res_realized_pl_variance.Add(ind, ac.performance_data.realized_pl_ratio_variance);
+                        res_total_capital_variance.Add(ind, ac.performance_data.total_capital_variance);
                         if (ac.performance_data.buy_pl_ratio_list.Count > 0)
                             res_ave_buy_pl.Add(ind, ac.performance_data.buy_pl_ratio_list.Average());
                         else
@@ -160,6 +169,7 @@ namespace BTCSIM2
                         else
                             res_ave_sell_pl.Add(ind, 0);
                         var res = i.ToString() + "," + ac.performance_data.num_trade.ToString() + "," + ac.performance_data.win_rate.ToString() + "," + ac.performance_data.realized_pl.ToString() + "," +
+                            ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+
                         para_pt[ind].ToString() + "," + para_lc[ind].ToString() + "," + para_num_split[ind].ToString() + "," + para_func[ind].ToString() + "," + para_ma_term[ind].ToString() + "," +
                         string.Join(":", para_nanpin_timing[ind]) + "," + string.Join(":", para_nanpin_lot[ind]);
                         sw.WriteLine(res);
