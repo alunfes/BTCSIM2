@@ -62,7 +62,7 @@ namespace BTCSIM2
 
             var from = 1000;
             //var to = MarketData.Close.Count - 1;
-            var to = 250000;
+            var to = 500000;
 
 
             /*
@@ -265,11 +265,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0145 };
-                var lot_splits = new List<double>() { 0.5,0.5 };
-                var pt_ratio = 0.017;
-                var lc_ratio = 0.03;
-                var ma_term = 7;    
+                var nanpin_timing = new List<double>() { 0.0039,0.0079,0.0118,0.0157,0.0197,0.0236,0.0275,0.0315,0.0354,0.0393,0.0433,0.0472,0.0511,0.0551 };
+                var lot_splits = new List<double>() { 0.124989,0.116657,0.108326,0.099994,0.091662,0.08333,0.074998,0.066667,0.058335,0.050003,0.041671,0.03334,0.025008,0.016676,0.008344 };
+                var pt_ratio = 0.06;
+                var lc_ratio = 0.06;
+                var ma_term = 20;    
                 var contrarian = true;
                 var ac = new Account();
                 var sim = new Sim();
