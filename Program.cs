@@ -48,8 +48,9 @@ namespace BTCSIM2
                 Console.WriteLine("\"multi nanpin\" : Multi param nanpin sim");
                 Console.WriteLine("\"madiv nanpin\" : MA div nanpin sim");
                 Console.WriteLine("\"read sim\" : Read MA div nanpin sim");
+                Console.WriteLine("\"read multi\" : Read multi MA div nanpin sim");
                 key = Console.ReadLine();
-                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" || key == "read sim")
+                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" || key == "read sim" || key == "read multi")
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -61,8 +62,8 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            //var to = MarketData.Close.Count - 1;
-            var to = 500000;
+            var to = MarketData.Close.Count - 1;
+            //var to = 500000;
 
 
             /*
@@ -265,11 +266,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0039,0.0079,0.0118,0.0157,0.0197,0.0236,0.0275,0.0315,0.0354,0.0393,0.0433,0.0472,0.0511,0.0551 };
-                var lot_splits = new List<double>() { 0.124989,0.116657,0.108326,0.099994,0.091662,0.08333,0.074998,0.066667,0.058335,0.050003,0.041671,0.03334,0.025008,0.016676,0.008344 };
-                var pt_ratio = 0.06;
-                var lc_ratio = 0.06;
-                var ma_term = 20;    
+                var nanpin_timing = new List<double>() { 0.0008,0.0015,0.0023,0.003,0.0038,0.0045,0.0053,0.006,0.0068,0.0075,0.0083 };
+                var lot_splits = new List<double>() { 3E-06,0.001979,0.007908,0.017789,0.031622,0.049408,0.071147,0.096837,0.126481,0.160076,0.197625,0.239125 };
+                var pt_ratio = 0.03;
+                var lc_ratio = 0.01;
+                var ma_term = 15;    
                 var contrarian = true;
                 var ac = new Account();
                 var sim = new Sim();
@@ -284,6 +285,12 @@ namespace BTCSIM2
                 var rsim = new ReadSim();
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from);
 
+            }
+            else if(key == "read multi")
+            {
+                Console.WriteLine("Read multi MA div nanpin Sim");
+                var rs = new ReadSim();
+                rs.startMultiReadSim(from, to, 5);
             }
         }
     }

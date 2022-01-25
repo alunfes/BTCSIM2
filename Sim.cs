@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+
 namespace BTCSIM2
 {
     public class Sim
@@ -80,5 +81,7 @@ namespace BTCSIM2
             ac.calc_sharp_ratio();
             return ac;
         }
+
+
     }
 }
