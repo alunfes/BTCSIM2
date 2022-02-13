@@ -174,8 +174,8 @@ namespace BTCSIM2
                     ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
             }
 
-            if (ac.holding_data.holding_size > 1.01)
-                Console.WriteLine("Holding size is larger than 1.0!");
+            //if (ac.holding_data.holding_size > 1.01)
+            //    Console.WriteLine("Holding size is larger than 1.0!");
 
             return ad;
         }

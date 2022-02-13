@@ -57,7 +57,7 @@ namespace BTCSIM2
             stopWatch.Start();
             Console.WriteLine("started program.");
             RandomSeed.initialize();
-            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115};
+            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 180, 190, 200, 220, 240, 260, 280};
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
@@ -150,8 +150,9 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
-                var on = new OptNanpin();
-                var d = on.getNanpinParam2(0.01, 0.01, 5, 2);
+
+                using (StreamWriter sw = new StreamWriter(@"./Data/test.csv"))
+                    sw.WriteLine(string.Join(",", terms));
                 Console.WriteLine("");
             }
             if (key == "ptlc")
@@ -265,8 +266,8 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0098,0.02,0.029,0.04 };
-                var lot_splits = new List<double>() { 0.000004,0.28998,0.38996,0.30998,0.000004 };
+                var nanpin_timing = new List<double>() { 0.0098,0.0196,0.0294,0.0392 };
+                var lot_splits = new List<double>() { 0.01,0.29,0.4,0.299,0.01 };
                 var pt_ratio = 0.023;
                 var lc_ratio = 0.05;
                 var ma_term = 2;    

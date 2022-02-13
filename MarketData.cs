@@ -101,6 +101,21 @@ namespace BTCSIM2
             Console.WriteLine("Completed read data.");
         }
 
+
+        //
+        static public void write_data(int ma_term)
+        {
+            using (StreamWriter sw = new StreamWriter(@"./Data/MarketData.csv"))
+            {
+                sw.WriteLine("dt,open,high,low,close,volume,sma-" + ma_term.ToString()+",sma divergence-"+ma_term.ToString());
+                for(int i= close.Count-1000; i<close.Count; i++)
+                {
+                    sw.WriteLine(dt[i].ToString() + "," + open[i].ToString() + "," + high[i].ToString() + "," + low[i].ToString() + "," +
+                        close[i].ToString() + "," + volume[i].ToString() + "," + Sma[ma_term][i].ToString() + "," + Divergence[ma_term][i].ToString());
+                }
+            }
+        }
+
         static private void calc_index(List<int> terms_list)
         {
             terms = terms_list;
@@ -149,7 +164,7 @@ namespace BTCSIM2
                 {
                     if (price[i] == double.NaN || ma[i] == double.NaN) { res.Add(double.NaN); }
                     else if (price[i] == 0 && ma[i] == 0) { res.Add(0); }
-                    else { res.Add((price[i] - ma[i]) / ma[i]); }
+                    else { res.Add(100.0 * (price[i] - ma[i]) / ma[i]); }
                 }
 
             }

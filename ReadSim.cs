@@ -21,7 +21,8 @@ namespace BTCSIM2
         public Dictionary<int, List<double>> res_total_capital_list { get; set; }
         public Dictionary<int, List<int>> res_num_trade_list { get; set; }
 
-        public Dictionary<int, double> opt_pl { get; set; }
+        public Dictionary<int, double> opt_total_pl { get; set; }
+        public Dictionary<int, double> opt_realized_pl { get; set; }
         public Dictionary<int, double> opt_win_rate { get; set; }
         public Dictionary<int, double> opt_num_trade { get; set; }
         public Dictionary<int, double> opt_realized_pl_var { get; set; }
@@ -55,7 +56,8 @@ namespace BTCSIM2
             para_ma_term = new Dictionary<int, int>();
             para_nanpin_timing = new Dictionary<int, double[]>();
             para_nanpin_lot = new Dictionary<int, double[]>();
-            opt_pl = new Dictionary<int, double>();
+            opt_total_pl = new Dictionary<int, double>();
+            opt_realized_pl = new Dictionary<int, double>();
             opt_win_rate = new Dictionary<int, double>();
             opt_num_trade = new Dictionary<int, double>();
             opt_realized_pl_var = new Dictionary<int, double>();
@@ -71,7 +73,7 @@ namespace BTCSIM2
         public void startMultiReadSim(int from, int to, int inscope_for_sim)
         {
             initialize();
-            var opt_pl = new Dictionary<int, double>();
+            var opt_realized_pl = new Dictionary<int, double>();
             var n = 0;
             //read pl data in opt nanpin and sort by the pl val
             using(var sr = new StreamReader("opt nanpin.csv"))
@@ -79,11 +81,11 @@ namespace BTCSIM2
                 var data = sr.ReadLine();
                 while ((data = sr.ReadLine()) != null)
                 {
-                    opt_pl.Add(n, Convert.ToDouble(data.Split(',')[3]));
+                    opt_realized_pl.Add(n, Convert.ToDouble(data.Split(',')[3]));
                     n++;
                 }
             }
-            IOrderedEnumerable<KeyValuePair<int, double>> sorted = opt_pl.OrderByDescending(pair => pair.Value);
+            IOrderedEnumerable<KeyValuePair<int, double>> sorted = opt_realized_pl.OrderByDescending(pair => pair.Value);
             var selected_inds = new List<int>();
             foreach (var data in sorted)
             {
@@ -173,21 +175,22 @@ namespace BTCSIM2
                     //"No.,num trade,win rate,realized pl,realzied pl var,total capital var,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
                     opt_num_trade.Add(no, Convert.ToDouble(ele[1]));
                     opt_win_rate.Add(no, Convert.ToDouble(ele[2]));
-                    opt_pl.Add(no, Convert.ToDouble(ele[3]));
-                    opt_realized_pl_var.Add(no, Convert.ToDouble(ele[4]));
-                    opt_total_capital_var.Add(no, Convert.ToDouble(ele[5]));
-                    para_pt.Add(no, Convert.ToDouble(ele[6]));
-                    para_lc.Add(no, Convert.ToDouble(ele[7]));
-                    para_ma_term.Add(no, Convert.ToInt32(ele[10]));
-                    para_nanpin_timing.Add(no, ele[11].Split(':').Select(double.Parse).ToArray());
-                    para_nanpin_lot.Add(no, ele[12].Split(':').Select(double.Parse).ToArray());
+                    opt_total_pl.Add(no, Convert.ToDouble(ele[3]));
+                    opt_realized_pl.Add(no, Convert.ToDouble(ele[4]));
+                    opt_realized_pl_var.Add(no, Convert.ToDouble(ele[5]));
+                    opt_total_capital_var.Add(no, Convert.ToDouble(ele[6]));
+                    para_pt.Add(no, Convert.ToDouble(ele[7]));
+                    para_lc.Add(no, Convert.ToDouble(ele[8]));
+                    para_ma_term.Add(no, Convert.ToInt32(ele[11]));
+                    para_nanpin_timing.Add(no, ele[12].Split(':').Select(double.Parse).ToArray());
+                    para_nanpin_lot.Add(no, ele[13].Split(':').Select(double.Parse).ToArray());
                     no++;
                 }
             }
             //do sim
             using (var sw = new StreamWriter("read sim.csv",false))
             {
-                sw.WriteLine("i,pt,lc,ma term,nanpin timing,nanpin lot,opt pl,opt realized pl var,opt total capital var,opt num trade,opt win rate,earning performance,num trade performance,win rate performance,sim realized pl var,sim total capital var");
+                sw.WriteLine("i,pt,lc,ma term,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate,earning performance,num trade performance,win rate performance,sim realized pl var,sim total capital var");
                 var progress = 0.0;
                 var term_adjust = Convert.ToDouble(opt_term) / Convert.ToDouble((to - from));
                 for (int i = 0; i < no; i++)
@@ -209,7 +212,7 @@ namespace BTCSIM2
                     var num_trade_performance = Math.Round(term_adjust * ac.performance_data.num_trade,4); Math.Round(term_adjust * ac.performance_data.num_trade - opt_num_trade[i],4);
                     var win_rate_performance = Math.Round(ac.performance_data.win_rate, 4);//Math.Round(ac.performance_data.win_rate / opt_win_rate[i], 4);
                     var res = i.ToString() + "," + para_pt[i].ToString() + "," + para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + string.Join(":", para_nanpin_timing[i]) + "," +
-                        string.Join(":", para_nanpin_lot[i]) + "," + opt_pl[i].ToString()+","+ opt_realized_pl_var[i].ToString() +","+opt_total_capital_var[i].ToString()+","+
+                        string.Join(":", para_nanpin_lot[i]) + "," + opt_total_pl[i].ToString() +","+opt_realized_pl[i].ToString()+","+ opt_realized_pl_var[i].ToString() +","+opt_total_capital_var[i].ToString()+","+
                         opt_num_trade[i].ToString() +","+opt_win_rate[i].ToString() +","+ pl_performance.ToString() +","+num_trade_performance.ToString()+ "," + win_rate_performance.ToString()
                         +","+ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString();
                     progress = Math.Round(100.0 * Convert.ToDouble(i) / Convert.ToDouble(no), 2);
