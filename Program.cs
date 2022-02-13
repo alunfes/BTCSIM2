@@ -150,10 +150,9 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
-                Parallel.For(0, 100, i =>
-                {
-                    Console.WriteLine(i);
-                });
+                var on = new OptNanpin();
+                var d = on.getNanpinParam2(0.01, 0.01, 5, 2);
+                Console.WriteLine("");
             }
             if (key == "ptlc")
             {
@@ -266,11 +265,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0008,0.0015,0.0023,0.003,0.0038,0.0045,0.0053,0.006,0.0068,0.0075,0.0083 };
-                var lot_splits = new List<double>() { 3E-06,0.001979,0.007908,0.017789,0.031622,0.049408,0.071147,0.096837,0.126481,0.160076,0.197625,0.239125 };
-                var pt_ratio = 0.03;
-                var lc_ratio = 0.01;
-                var ma_term = 15;    
+                var nanpin_timing = new List<double>() { 0.0098,0.02,0.029,0.04 };
+                var lot_splits = new List<double>() { 0.000004,0.28998,0.38996,0.30998,0.000004 };
+                var pt_ratio = 0.023;
+                var lc_ratio = 0.05;
+                var ma_term = 2;    
                 var contrarian = true;
                 var ac = new Account();
                 var sim = new Sim();

@@ -59,10 +59,10 @@ namespace BTCSIM2
         public void startOptMADivNanpin(int from, int to, bool flg_paralell)
         {
             initializer();
-            var pt = new List<double>() { 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025, 0.027, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.08, 0.09 };
-            var lc = new List<double>() { 0.01, 0.02, 0.03, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08, 0.085, 0.09, 0.095, 0.1, 0.12, 0.15, 0.17 };
-            var num_split = new List<int>() {2, 5, 9, 12, 15};
-            var func = new List<int>() { 0, 1, 2, 3, 4, 5, 6};
+            var pt = new List<double>() { 0.002, 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025, 0.027, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.08, 0.09 };
+            var lc = new List<double>() { 0.002, 0.005, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017, 0.019, 0.021, 0.023, 0.025, 0.027, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.08, 0.09, 0.12, 0.15, 0.17, 0.2 };
+            var num_split = new List<int>() {2, 3, 5, 7, 9, 11, 13, 15};
+            var func = new List<int>() { 0, 1, 2};//{ 0, 1, 2, 3, 4, 5, 6};
             var ma_term = MarketData.terms;
             var no = 0;
 
@@ -178,6 +178,79 @@ namespace BTCSIM2
                     }
                 }
             }
+        }
+
+
+
+        /*
+         * 関数は同値分割（total_size / num）、x%ずつlotを上げる、x%ずつlotを下げるから選択する。
+         * 
+         */
+        public Dictionary<string, List<double[]>> getNanpinParam2(double pt, double lc, int num_splits, int select_func_no)
+        {
+            var nanpin_lots = new Dictionary<string, List<double[]>>(); //napin lot name, nanpin timing, lot splilit
+            if (num_splits > 1)
+            {
+                var min_lot = 0.001;
+                var total_size = 0.05;
+                //nanpin timing
+                var timing = new List<double>();
+                var unit = (lc - 0.0001) / Convert.ToDouble(num_splits);
+                for (int i = 0; i < num_splits - 1; i++)
+                    timing.Add(Math.Round(unit * (i + 1), 4));
+                var alloc = new List<double>();
+                if (select_func_no == 0)
+                {
+                    var sampling_unit = total_size / Convert.ToDouble(num_splits);
+                    for (int i = 0; i < num_splits; i++)
+                        alloc.Add(Math.Round(sampling_unit, 6));
+                }
+                else if (select_func_no == 1)//increase with x% from min_lot, sum lot should be equal to max_size
+                {
+                    var r = calc_r(num_splits);
+                    alloc.Add(min_lot);
+                    for (int i = 1; i < num_splits; i++)
+                        alloc.Add(min_lot * Math.Pow(r, i));
+                }
+                else if (select_func_no == 2)//decrease with x% from min_lot, sum lot should be equal to max_size
+                {
+                    var r = calc_r(num_splits);
+                    var realloc = new List<double>();
+                    realloc.Add(min_lot);
+                    for (int i = 1; i < num_splits; i++)
+                        realloc.Add(min_lot * Math.Pow(r, i));
+                    for (int i = 0; i < realloc.Count; i++)
+                        alloc.Add(realloc[realloc.Count - i - 1]);
+                }
+                else
+                    Console.WriteLine("OptNanpin: Invalid select_func_no !");
+                nanpin_lots.Add(num_splits.ToString() + "-" + select_func_no.ToString(), new List<double[]> { timing.ToArray(), alloc.ToArray() });
+            }
+            else
+            {
+                nanpin_lots.Add(num_splits.ToString() + "-" + select_func_no.ToString(), new List<double[]> { new double[] { }, new double[] { 1.0 } });
+            }
+            double calc_wa(double r, int n)
+            {
+                double wa = 0.0;
+                for (int i = 0; i < n-1; i++)
+                    wa += Math.Pow(r, i + 1);
+                return wa;
+            }
+            double calc_r(int n)
+            {
+                var correctwa = 49.0;//minlot= 0.001, maxlot=0.05の場合に等比数列では常に成立する。
+                var r = 0.1;
+                while(true)
+                {
+                    if (calc_wa(r, n) >= correctwa)
+                    {
+                        return Math.Round(r, 5);
+                    }
+                    r += 0.001;
+                }
+            }
+            return nanpin_lots;
         }
 
 
