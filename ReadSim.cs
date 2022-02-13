@@ -172,7 +172,7 @@ namespace BTCSIM2
                 while((data = sr.ReadLine()) != null)
                 {
                     var ele = data.Split(',');
-                    //"No.,num trade,win rate,realized pl,realzied pl var,total capital var,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
+                    //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
                     opt_num_trade.Add(no, Convert.ToDouble(ele[1]));
                     opt_win_rate.Add(no, Convert.ToDouble(ele[2]));
                     opt_total_pl.Add(no, Convert.ToDouble(ele[3]));

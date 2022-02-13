@@ -481,7 +481,7 @@ namespace BTCSIM2
             if (log_data.sell_points.Keys.Contains(i) == false)
                 log_data.sell_points[i] = 0;
             //log_data.log_data_table.WriteXml("log.html", XmlWriteMode.DiffGram);
-            writeCsv("log.csv", log_data.log_data_table);
+            //writeCsv("log.csv", log_data.log_data_table);
         }
 
         public void entry_order(string type, string side, double size, double price, int i, string dt, string message)
