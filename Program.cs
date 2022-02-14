@@ -28,12 +28,12 @@ namespace BTCSIM2
             Console.WriteLine("max_dd=" + ac.performance_data.max_dd);
             Console.WriteLine("max_pl=" + ac.performance_data.max_pl);
             Console.WriteLine("ave_holding_period=" + ac.holding_data.holding_period_list.Average());
-            Console.WriteLine("dd_period_ratio=" + ac.performance_data.dd_period_ratio);
-            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "DD Period Ratio" };
+            Console.WriteLine("total_capital_gradient=" + ac.performance_data.total_capital_gradient);
+            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient" };
             var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
             Math.Round(ac.performance_data.max_pl,4).ToString(), Math.Round(ac.performance_data.buy_pl_list.Sum() / Convert.ToDouble(ac.performance_data.buy_pl_list.Count), 4).ToString(),
                 Math.Round(ac.performance_data.sell_pl_list.Sum() / Convert.ToDouble(ac.performance_data.sell_pl_list.Count), 4).ToString(), Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString(),
-                ac.performance_data.num_force_exit.ToString(), ac.performance_data.dd_period_ratio.ToString()};
+                ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString()};
             LineChart.DisplayLineChart3(ac.performance_data.total_capital_list, ac.performance_data.log_close, ac.performance_data.num_trade_list, table_labels, table_data, title + ": from=" + ac.start_ind.ToString() + ", to=" + ac.end_ind.ToString());
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
         }
@@ -65,8 +65,8 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            var to = 100000;
-            //var to = MarketData.Close.Count - 1;
+            //var to = 100000;
+            var to = MarketData.Close.Count - 1;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
 
@@ -271,11 +271,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.002,0.004,0.006,0.008,0.01,0.012,0.014,0.0159,0.0179,0.0199,0.0219,0.0239,0.0259,0.0279 };
-                var lot_splits = new List<double>() { 0.001,0.001157,0.001338649,0.001548816893,0.001791981145201,0.0020733221849975575,0.0023988337680421737,0.0027754506696247953,0.003211196424755888,0.0037153542634425626,0.004298664882803046,0.004973555269403123,0.0057544034466994135,0.006657844787831222,0.007703126419520724 };
-                var pt_ratio = 0.03;
-                var lc_ratio = 0.03;
-                var ma_term = 200;    
+                var nanpin_timing = new List<double>() { 0.017 };
+                var lot_splits = new List<double>() { 0.0002,0.9998 };
+                var pt_ratio = 0.017;
+                var lc_ratio = 0.035;
+                var ma_term = 4;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();

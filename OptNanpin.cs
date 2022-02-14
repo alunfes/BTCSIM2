@@ -99,7 +99,7 @@ namespace BTCSIM2
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,dd period ratio,pt,lc,num_split,func,ma_term,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,nanpin timing,lot splits");
                 if (flg_paralell)
                 {
                     Parallel.For(0, no, i =>
@@ -118,11 +118,10 @@ namespace BTCSIM2
                         res_ave_sell_pl.Add(i, ac.performance_data.sell_pl_ratio_list.Average());
                         res_realized_pl_variance.Add(i, ac.performance_data.realized_pl_ratio_variance);
                         res_total_capital_variance.Add(i, ac.performance_data.total_capital_variance);
-                        var res = n.ToString() + "," +ac.performance_data.num_trade.ToString()+","+ac.performance_data.win_rate.ToString()+","+ac.performance_data.realized_pl.ToString()+","+
-                        ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+
-                        ac.performance_data.sharp_ratio.ToString()+","+ac.performance_data.dd_period_ratio.ToString()+","+
-                        para_pt[i].ToString()+","+para_lc[i].ToString()+","+para_num_split[i].ToString()+","+para_func[i].ToString()+","+para_ma_term[i].ToString()+","+
-                        string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]);
+                        var res = n.ToString() + "," +ac.performance_data.num_trade.ToString()+","+ac.performance_data.win_rate.ToString()+","+ac.performance_data.total_pl.ToString() +","+
+                        ac.performance_data.realized_pl.ToString()+","+ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+ac.performance_data.sharp_ratio.ToString()+","+
+                        ac.performance_data.total_capital_gradient.ToString()+","+para_pt[i].ToString()+","+para_lc[i].ToString()+","+para_num_split[i].ToString()+","+
+                        para_func[i].ToString()+","+para_ma_term[i].ToString()+","+ string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]);
                         sw.WriteLine(res);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(no), 2);
@@ -172,7 +171,7 @@ namespace BTCSIM2
                             res_ave_sell_pl.Add(ind, 0);
                         var res = i.ToString() + "," + ac.performance_data.num_trade.ToString() + "," + ac.performance_data.win_rate.ToString() + "," + ac.performance_data.total_pl.ToString() +","+ac.performance_data.realized_pl.ToString() + "," +
                             ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+
-                            ac.performance_data.sharp_ratio.ToString() + "," + ac.performance_data.dd_period_ratio.ToString() + "," +para_pt[ind].ToString() + "," +
+                            ac.performance_data.sharp_ratio.ToString() + "," + ac.performance_data.total_capital_gradient.ToString() + "," +para_pt[ind].ToString() + "," +
                             para_lc[ind].ToString() + "," + para_num_split[ind].ToString() + "," + para_func[ind].ToString() + "," + para_ma_term[ind].ToString() + "," +
                             string.Join(":", para_nanpin_timing[ind]) + "," + string.Join(":", para_nanpin_lot[ind]);
                         sw.WriteLine(res);

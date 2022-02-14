@@ -32,7 +32,7 @@ namespace BTCSIM2
         public double max_dd { get; set; }
         public double max_pl { get; set; }
         public int num_force_exit { get; set; }
-        public double dd_period_ratio { get; set; }
+        public double total_capital_gradient { get; set; }
         public List<double> log_close { get; set; }
 
         public int num_trade { get; set; }
@@ -78,7 +78,7 @@ namespace BTCSIM2
             max_dd = 0.0;
             max_pl = 0.0;
             num_force_exit = 0;
-            dd_period_ratio = 0.0;
+            total_capital_gradient = 0.0;
         }
     }
 
@@ -396,17 +396,10 @@ namespace BTCSIM2
         //total capの高値を越えられなかった日の合計　÷　end_ind - start_ind
         private void calcDDPeriodRatio()
         {
-            var maxcap = performance_data.total_capital_list[0];
-            var num_dd_days = 0;
-            //count dd days
-            for(int i=1; i<performance_data.total_capital_list.Count; i++)
-            {
-                if (maxcap > performance_data.total_capital_list[i])
-                    num_dd_days++;
-                else
-                    maxcap = performance_data.total_capital_list[i];
-            }
-            performance_data.dd_period_ratio = Math.Round(Convert.ToDouble(num_dd_days) / Convert.ToDouble(performance_data.total_capital_list.Count-1), 4);
+            var grad = 0.0;
+            for (int i = 0; i < performance_data.total_capital_list.Count - 1; i++)
+                grad += performance_data.total_capital_list[i + 1] - performance_data.total_capital_list[i];
+            performance_data.total_capital_gradient = Math.Round(grad / Convert.ToDouble(performance_data.total_capital_list.Count-1), 4);
         }
 
 
@@ -586,9 +579,9 @@ namespace BTCSIM2
                 order_data.order_serial_list.Add(order_data.order_serial_num);
                 order_data.order_type[order_data.order_serial_num] = type;
                 order_data.order_side[order_data.order_serial_num] = side;
-                if (message.Contains("pt") || message.Contains("lc"))
+                if (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))
                 {
-                    order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt or lc
+                    order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt, lc or force exit
                 }
                 else
                 {
