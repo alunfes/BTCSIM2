@@ -14,45 +14,45 @@ namespace BTCSIM2
 {
     public class OptNanpin
     {
-        public Dictionary<int, double> res_total_capital {get;set;}
-        public Dictionary<int, double> res_total_pl_ratio { get; set; }
-        public Dictionary<int, double> res_win_rate { get; set; }
-        public Dictionary<int, int> res_num_trade { get; set; }
-        public Dictionary<int, int> res_num_buy { get; set; }
-        public Dictionary<int, int> res_num_sell { get; set; }
-        public Dictionary<int, double> res_ave_buy_pl { get; set; }
-        public Dictionary<int, double> res_ave_sell_pl { get; set; }
-        public Dictionary<int, double> res_realized_pl_variance { get; set; }
-        public Dictionary<int, double> res_total_capital_variance { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital {get;set;}
+        public ConcurrentDictionary<int, double> res_total_pl_ratio { get; set; }
+        public ConcurrentDictionary<int, double> res_win_rate { get; set; }
+        public ConcurrentDictionary<int, int> res_num_trade { get; set; }
+        public ConcurrentDictionary<int, int> res_num_buy { get; set; }
+        public ConcurrentDictionary<int, int> res_num_sell { get; set; }
+        public ConcurrentDictionary<int, double> res_ave_buy_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_ave_sell_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_realized_pl_variance { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital_variance { get; set; }
 
-        public Dictionary<int, double> para_pt { get; set; }
-        public Dictionary<int, double> para_lc { get; set; }
-        public Dictionary<int, int> para_num_split { get; set; }
-        public Dictionary<int, int> para_func { get; set; }
-        public Dictionary<int, int> para_ma_term { get; set; }
-        public Dictionary<int, double[]> para_nanpin_timing { get; set; }
-        public Dictionary<int, double[]> para_nanpin_lot { get; set; }
+        public ConcurrentDictionary<int, double> para_pt { get; set; }
+        public ConcurrentDictionary<int, double> para_lc { get; set; }
+        public ConcurrentDictionary<int, int> para_num_split { get; set; }
+        public ConcurrentDictionary<int, int> para_func { get; set; }
+        public ConcurrentDictionary<int, int> para_ma_term { get; set; }
+        public ConcurrentDictionary<int, double[]> para_nanpin_timing { get; set; }
+        public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
 
 
         private void initializer()
         {
-            res_total_capital = new Dictionary<int, double>();
-            res_total_pl_ratio = new Dictionary<int, double>();
-            res_win_rate = new Dictionary<int, double>();
-            res_num_trade = new Dictionary<int, int>();
-            res_num_buy = new Dictionary<int, int>();
-            res_num_sell = new Dictionary<int, int>();
-            res_ave_buy_pl = new Dictionary<int, double>();
-            res_ave_sell_pl = new Dictionary<int, double>();
-            res_realized_pl_variance = new Dictionary<int, double>();
-            res_total_capital_variance = new Dictionary<int, double>();
-            para_pt = new Dictionary<int, double>();
-            para_lc = new Dictionary<int, double>();
-            para_num_split = new Dictionary<int, int>();
-            para_func = new Dictionary<int, int>();
-            para_ma_term = new Dictionary<int, int>();
-            para_nanpin_timing = new Dictionary<int, double[]>();
-            para_nanpin_lot = new Dictionary<int, double[]>();
+            res_total_capital = new ConcurrentDictionary<int, double>();
+            res_total_pl_ratio = new ConcurrentDictionary<int, double>();
+            res_win_rate = new ConcurrentDictionary<int, double>();
+            res_num_trade = new ConcurrentDictionary<int, int>();
+            res_num_buy = new ConcurrentDictionary<int, int>();
+            res_num_sell = new ConcurrentDictionary<int, int>();
+            res_ave_buy_pl = new ConcurrentDictionary<int, double>();
+            res_ave_sell_pl = new ConcurrentDictionary<int, double>();
+            res_realized_pl_variance = new ConcurrentDictionary<int, double>();
+            res_total_capital_variance = new ConcurrentDictionary<int, double>();
+            para_pt = new ConcurrentDictionary<int, double>();
+            para_lc = new ConcurrentDictionary<int, double>();
+            para_num_split = new ConcurrentDictionary<int, int>();
+            para_func = new ConcurrentDictionary<int, int>();
+            para_ma_term = new ConcurrentDictionary<int, int>();
+            para_nanpin_timing = new ConcurrentDictionary<int, double[]>();
+            para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
         }
 
 
@@ -80,13 +80,14 @@ namespace BTCSIM2
                             {
                                 //var d = getNanpinParam2(pt[i], lc[j], num_split[k], func[l]);
                                 var d = getNanpinParam(pt[i], lc[j], num_split[k], func[l]);
-                                para_pt.Add(no, pt[i]);
-                                para_lc.Add(no, lc[j]);
-                                para_num_split.Add(no, num_split[k]);
-                                para_func.Add(no, func[l]);
-                                para_ma_term.Add(no, ma_term[m]);
-                                para_nanpin_timing.Add(no, d.Values.ToList()[0].ToList()[0]);
-                                para_nanpin_lot.Add(no, d.Values.ToList()[0].ToList()[1]);
+                                para_pt[no] = pt[i];
+                                para_pt[no] = pt[i];
+                                para_lc[no] = lc[j];
+                                para_num_split[no] = num_split[k];
+                                para_func[no] = func[l];
+                                para_ma_term[no] = ma_term[m];
+                                para_nanpin_timing[no] = d.Values.ToList()[0].ToList()[0];
+                                para_nanpin_lot[no] = d.Values.ToList()[0].ToList()[1];
                                 no++;
                             }
                         }
@@ -117,33 +118,35 @@ namespace BTCSIM2
                             return res;
                         }
                     }
-                    var ind_var = new Dictionary<int, int>();
+                    var selected_ind = new ConcurrentDictionary<int, int>();
+                    for (int i = 0; i < no; i++)
+                        selected_ind[i] = getNextInd();
+                    var ac_list = new ConcurrentDictionary<int, Account>();
                     Parallel.For(0, no, i =>
                     {
                         var sim = new Sim();
                         var ac = new Account(lev_fixed_trading,true);
-                        ind_var[i] = getNextInd();
-
-                        ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[ind_var[i]], para_lc[ind_var[i]],
-                            para_nanpin_timing[ind_var[i]].ToList(), para_nanpin_lot[ind_var[i]].ToList(), para_ma_term[ind_var[i]], true);
-                        res_total_capital.Add(ind_var[i], ac.performance_data.total_capital);
-                        res_total_pl_ratio.Add(ind_var[i], ac.performance_data.total_pl_ratio);
-                        res_win_rate.Add(ind_var[i], ac.performance_data.win_rate);
-                        res_num_trade.Add(ind_var[i], ac.performance_data.num_trade);
-                        res_num_buy.Add(ind_var[i], ac.performance_data.num_buy);
-                        res_num_sell.Add(ind_var[i], ac.performance_data.num_sell);
-                        res_ave_buy_pl.Add(ind_var[i], ac.performance_data.buy_pl_ratio_list.Average());
-                        res_ave_sell_pl.Add(ind_var[i], ac.performance_data.sell_pl_ratio_list.Average());
-                        res_realized_pl_variance.Add(ind_var[i], ac.performance_data.realized_pl_ratio_variance);
-                        res_total_capital_variance.Add(ind_var[i], ac.performance_data.total_capital_variance);
-                        var res = n.ToString() + "," +ac.performance_data.num_trade.ToString()+","+ac.performance_data.win_rate.ToString()+","+ac.performance_data.total_pl.ToString() +","+
-                        ac.performance_data.realized_pl.ToString()+","+ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+ac.performance_data.sharp_ratio.ToString()+","+
-                        ac.performance_data.total_capital_gradient.ToString()+","+para_pt[ind_var[i]].ToString()+","+para_lc[ind_var[i]].ToString()+","+para_num_split[ind_var[i]].ToString()+","+
-                        para_func[ind_var[i]].ToString()+","+para_ma_term[ind_var[i]].ToString()+","+ string.Join(":", para_nanpin_timing[ind_var[i]]) + "," + string.Join(":", para_nanpin_lot[ind_var[i]]);
+                        ac_list[selected_ind[i]] = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[selected_ind[i]], para_lc[selected_ind[i]],
+                            para_nanpin_timing[selected_ind[i]].ToList(), para_nanpin_lot[selected_ind[i]].ToList(), para_ma_term[selected_ind[i]], true);
+                        res_total_capital.GetOrAdd(selected_ind[i], ac_list[selected_ind[i]].performance_data.total_capital);
+                        res_total_pl_ratio[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.total_pl_ratio;
+                        res_win_rate[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.win_rate;
+                        res_num_trade[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.num_trade;
+                        res_num_buy[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.num_buy;
+                        res_num_sell[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.num_sell;
+                        res_ave_buy_pl[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.buy_pl_ratio_list.Average();
+                        res_ave_sell_pl[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.sell_pl_ratio_list.Average();
+                        res_realized_pl_variance[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.realized_pl_ratio_variance;
+                        res_total_capital_variance[selected_ind[i]] = ac_list[selected_ind[i]].performance_data.total_capital_variance;
+                        var res = n.ToString() + "," + ac_list[selected_ind[i]].performance_data.num_trade.ToString()+","+ ac_list[selected_ind[i]].performance_data.win_rate.ToString()+","+ ac_list[selected_ind[i]].performance_data.total_pl.ToString() +","+
+                        ac_list[selected_ind[i]].performance_data.realized_pl.ToString()+","+ ac_list[selected_ind[i]].performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+ ac_list[selected_ind[i]].performance_data.sharp_ratio.ToString()+","+
+                        ac_list[selected_ind[i]].performance_data.total_capital_gradient.ToString()+","+para_pt[selected_ind[i]].ToString()+","+para_lc[selected_ind[i]].ToString()+","+para_num_split[selected_ind[i]].ToString()+","+
+                        para_func[selected_ind[i]].ToString()+","+para_ma_term[selected_ind[i]].ToString()+","+ string.Join(":", para_nanpin_timing[selected_ind[i]]) + "," + string.Join(":", para_nanpin_lot[selected_ind[i]]);
                         sw.WriteLine(res);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(no), 2);
-                        Console.WriteLine(i.ToString() +"/"+no.ToString() + " - " + progress.ToString() + "%"+ ": pl ratio="+ac.performance_data.total_pl_ratio.ToString() + ", sharp ratio=" + ac.performance_data.sharp_ratio.ToString() + ", win rate=" + ac.performance_data.win_rate.ToString());
+                        Console.WriteLine(i.ToString() +"/"+no.ToString() + " - " + progress.ToString() + "%"+ ": pl ratio="+ ac_list[selected_ind[i]].performance_data.total_pl_ratio.ToString() + ", sharp ratio=" + ac_list[selected_ind[i]].performance_data.sharp_ratio.ToString() + ", win rate=" + ac_list[selected_ind[i]].performance_data.win_rate.ToString());
+                        ac_list.TryRemove(selected_ind[i], out var d);
                     });
                 }
                 else
@@ -171,22 +174,22 @@ namespace BTCSIM2
                         var ind = getNextInd();
                         ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[ind], para_lc[ind],
                             para_nanpin_timing[ind].ToList(), para_nanpin_lot[ind].ToList(), para_ma_term[ind], true);
-                        res_total_capital.Add(ind, ac.performance_data.total_capital);
-                        res_total_pl_ratio.Add(ind, ac.performance_data.total_pl_ratio);
-                        res_win_rate.Add(ind, ac.performance_data.win_rate);
-                        res_num_trade.Add(ind, ac.performance_data.num_trade);
-                        res_num_buy.Add(ind, ac.performance_data.num_buy);
-                        res_num_sell.Add(ind, ac.performance_data.num_sell);
-                        res_realized_pl_variance.Add(ind, ac.performance_data.realized_pl_ratio_variance);
-                        res_total_capital_variance.Add(ind, ac.performance_data.total_capital_variance);
+                        res_total_capital[ind] = ac.performance_data.total_capital;
+                        res_total_pl_ratio[ind] = ac.performance_data.total_pl_ratio;
+                        res_win_rate[ind] = ac.performance_data.win_rate;
+                        res_num_trade[ind] = ac.performance_data.num_trade;
+                        res_num_buy[ind] = ac.performance_data.num_buy;
+                        res_num_sell[ind]= ac.performance_data.num_sell;
+                        res_realized_pl_variance[ind]= ac.performance_data.realized_pl_ratio_variance;
+                        res_total_capital_variance[ind]= ac.performance_data.total_capital_variance;
                         if (ac.performance_data.buy_pl_ratio_list.Count > 0)
-                            res_ave_buy_pl.Add(ind, ac.performance_data.buy_pl_ratio_list.Average());
+                            res_ave_buy_pl[ind] =ac.performance_data.buy_pl_ratio_list.Average();
                         else
-                            res_ave_buy_pl.Add(ind, 0);
+                            res_ave_buy_pl[ind] = 0;
                         if (ac.performance_data.sell_pl_ratio_list.Count > 0)
-                            res_ave_sell_pl.Add(ind, ac.performance_data.sell_pl_ratio_list.Average());
+                            res_ave_sell_pl[ind]=ac.performance_data.sell_pl_ratio_list.Average();
                         else
-                            res_ave_sell_pl.Add(ind, 0);
+                            res_ave_sell_pl[ind]= 0;
                         var res = i.ToString() + "," + ac.performance_data.num_trade.ToString() + "," + ac.performance_data.win_rate.ToString() + "," + ac.performance_data.total_pl.ToString() +","+ac.performance_data.realized_pl.ToString() + "," +
                             ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString()+","+
                             ac.performance_data.sharp_ratio.ToString() + "," + ac.performance_data.total_capital_gradient.ToString() + "," +para_pt[ind].ToString() + "," +

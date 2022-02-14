@@ -312,7 +312,8 @@ namespace BTCSIM2
         public LogData log_data;
 
         public const double initial_capital = 10000.0; //in usd
-        public const double minimal_required_capital = 50; //finish trading when initial capital become less than the minimal required capital
+        public const double minimal_required_capital = 100; //finish trading when initial capital become less than the minimal required capital
+        public const double minimal_order_amount = 50;
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
@@ -325,7 +326,7 @@ namespace BTCSIM2
         public double fixed_amount = 0.0;
         public double max_lev_total_amount = 0.0; //maximum position size in leveraged trading
         public bool silent_mode = false; //true: do not display message, use for opt nanpin and etc.
-        
+        public bool stop_sim = false; //true when stop sim trigger was hit (i.e. minimal capital requirement)
 
 
         public int start_ind = 0;
@@ -550,65 +551,78 @@ namespace BTCSIM2
 
 
         //leveraged trading: order size should be percentage for the total available size (max_lev_total_amount)
-        //fixed amount trading: order size should be percentage for the total fixe amount
+        //fixed amount trading: order size should be percentage for the total fixe amount. no requirement for minimal capital, can be taken minus capital val
         public void entry_order(string type, string side, double size, double price, int i, string dt, string message)
         {
-            var flg_check_basics = false;
-            var flg_check_leverage = true;
-            var flg_check_min_capital = false;
-            var flg_check_type = false;
-            if (size > 0 && (side == "buy" || side == "sell"))
-                flg_check_basics = true;
-            if (leveraged_or_fixed_amount_trading == "leveraged")
+            if (stop_sim == false || (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))) //can place order when stop_sim == false, pt, lc, exit all order can be placed as exception 
             {
-                if (side == holding_data.holding_side)
+                var flg_check_order_side = true;
+                var flg_check_leverage = true;
+                var flg_check_min_capital = true;
+                var flg_check_order_type = true;
+                var flg_check_order_size = true;
+                if (side != "buy" && side != "sell")
                 {
-                    if(((MarketData.Close[i] * size) + holding_data.holding_volume) / performance_data.total_capital > leverage_limit)
-                        flg_check_leverage = false;
+                    flg_check_order_side = false;
+                    Console.WriteLine("Entry Order failed due to order side check !");
                 }
-            }
-            if (performance_data.total_capital > minimal_required_capital)
-                flg_check_min_capital = true;
-            if (type == "market" || type == "limit" || type == "stop market")
-                flg_check_type = true;
-
-            //allow order entry only when all flg cleared or opposite side entry (losscut and etc)
-            if (flg_check_basics && flg_check_leverage && flg_check_min_capital || (flg_check_basics && side != holding_data.holding_side && holding_data.holding_side != ""))
-            {
-                order_data.order_serial_num++;
-                order_data.order_serial_list.Add(order_data.order_serial_num);
-                order_data.order_type[order_data.order_serial_num] = type;
-                order_data.order_side[order_data.order_serial_num] = side;
-                if (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))
+                if (leveraged_or_fixed_amount_trading == "leveraged")
                 {
-                    order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt, lc or force exit
+                    if (side == holding_data.holding_side)
+                    {
+                        if (((MarketData.Close[i] * size) + holding_data.holding_volume) / performance_data.total_capital > leverage_limit)
+                        {
+                            flg_check_leverage = false;
+                            stop_sim = true;
+                            Console.WriteLine("Entry order failed due to over leverage !");
+                        }
+                    }
                 }
-                else
+                if (leveraged_or_fixed_amount_trading == "leveraged" && performance_data.total_capital < minimal_required_capital)
                 {
-                    if (leveraged_or_fixed_amount_trading == "leveraged")
-                        order_data.order_size[order_data.order_serial_num] = Math.Round(max_lev_total_amount * size / MarketData.Open[i], 6);
-                    else if (leveraged_or_fixed_amount_trading == "fixed")
-                        order_data.order_size[order_data.order_serial_num] = Math.Round(fixed_amount * size / MarketData.Open[i], 6);
+                    flg_check_min_capital = false;
+                    stop_sim = true;
+                    Console.WriteLine("Entry order failed due to too small capital !");
                 }
-                order_data.order_price[order_data.order_serial_num] = price;
-                order_data.order_i[order_data.order_serial_num] = i;
-                order_data.order_dt[order_data.order_serial_num] = dt;
-                order_data.order_cancel[order_data.order_serial_num] = false;
-                order_data.order_message[order_data.order_serial_num] = message;
-                log_data.add_log_data(i, dt, "entry order " + side + "-" + type, holding_data, order_data, performance_data);
-            }
-            else
-            {
-                if (flg_check_basics == false)
-                    Console.WriteLine("Entry Order failed due to basic check !");
-                if (flg_check_leverage == false)
-                    Console.WriteLine("Entry order failed due to over leverage !");
-                if (flg_check_min_capital == false)
+                if (type != "market" && type != "limit" && type != "stop market")
                 {
-                    //Console.WriteLine("Entry order failed due to too small capital !");
-                }
-                if (flg_check_type == false)
+                    flg_check_order_type = false;
                     Console.WriteLine("Entry order type should be market or limit !");
+                }
+                var order_size = 0.0;
+                if (leveraged_or_fixed_amount_trading == "leveraged")
+                    order_size = Math.Round(max_lev_total_amount * size / MarketData.Open[i], 4);
+                else if (leveraged_or_fixed_amount_trading == "fixed")
+                    order_size = Math.Round(fixed_amount * size / MarketData.Open[i], 4);
+                if (order_size * MarketData.Open[i] <= minimal_order_amount)
+                {
+                    flg_check_order_size = false;
+                    stop_sim = true;
+                    Console.WriteLine("Entry order amount is less than the minimal amount !");
+                }
+
+                //allow order entry only when all flg cleared or opposite side entry (losscut and etc)
+                if ((flg_check_order_side && flg_check_leverage && flg_check_order_type && flg_check_min_capital && flg_check_order_size) || (side != holding_data.holding_side && holding_data.holding_side != ""))
+                {
+                    order_data.order_serial_num++;
+                    order_data.order_serial_list.Add(order_data.order_serial_num);
+                    order_data.order_type[order_data.order_serial_num] = type;
+                    order_data.order_side[order_data.order_serial_num] = side;
+                    if (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))
+                    {
+                        order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt, lc or force exit
+                    }
+                    else
+                    {
+                        order_data.order_size[order_data.order_serial_num] = order_size;
+                    }
+                    order_data.order_price[order_data.order_serial_num] = price;
+                    order_data.order_i[order_data.order_serial_num] = i;
+                    order_data.order_dt[order_data.order_serial_num] = dt;
+                    order_data.order_cancel[order_data.order_serial_num] = false;
+                    order_data.order_message[order_data.order_serial_num] = message;
+                    log_data.add_log_data(i, dt, "entry order " + side + "-" + type, holding_data, order_data, performance_data);
+                }
             }
         }
 

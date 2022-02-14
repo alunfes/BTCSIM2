@@ -66,7 +66,7 @@ namespace BTCSIM2
 
             var from = 1000;
             //var to = 100000;
-            var to = MarketData.Close.Count - 1;
+            var to = MarketData.Close.Count - 300000;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
 
@@ -186,7 +186,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("optimize nanpin strategy parameter");
                 var o = new OptNanpin();
-                o.startOptMADivNanpin(from, to, false, leveraged_or_fixed_trading);
+                o.startOptMADivNanpin(from, to, true, leveraged_or_fixed_trading);
             }
             else if (key == "rand")
             {
