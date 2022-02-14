@@ -27,6 +27,8 @@ namespace BTCSIM2
         public Dictionary<int, double> opt_num_trade { get; set; }
         public Dictionary<int, double> opt_realized_pl_var { get; set; }
         public Dictionary<int, double> opt_total_capital_var { get; set; }
+        public Dictionary<int, double> opt_sharp_ratio { get; set; }
+        public Dictionary<int, double> opt_dd_period_ratio { get; set; }
 
         public Dictionary<int, double> para_pt { get; set; }
         public Dictionary<int, double> para_lc { get; set; }
@@ -62,6 +64,8 @@ namespace BTCSIM2
             opt_num_trade = new Dictionary<int, double>();
             opt_realized_pl_var = new Dictionary<int, double>();
             opt_total_capital_var = new Dictionary<int, double>();
+            opt_sharp_ratio = new Dictionary<int, double>();
+            opt_dd_period_ratio = new Dictionary<int, double>();
             res_total_capital_list = new Dictionary<int, List<double>>();
             res_num_trade_list = new Dictionary<int, List<int>>();
         }
@@ -70,7 +74,7 @@ namespace BTCSIM2
         /*
          * read opt nanpin.csv and conduct multi sim for top inscope_for_sim strategies
          */
-        public void startMultiReadSim(int from, int to, int inscope_for_sim)
+        public void startMultiReadSim(int from, int to, int inscope_for_sim, string lev_or_fixed)
         {
             initialize();
             var opt_realized_pl = new Dictionary<int, double>();
@@ -124,12 +128,12 @@ namespace BTCSIM2
             var close_log = new List<double>();
             for (int i=0; i<m; i++)
             {
-                var ac = new Account();
+                var ac = new Account(lev_or_fixed, true);
                 var sim = new Sim();
                 ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[i], para_lc[i], para_nanpin_timing[i].ToList(), para_nanpin_lot[i].ToList(), para_ma_term[i], true);
                 start_ind = ac.start_ind;
                 end_ind = ac.end_ind;
-                close_log = ac.log_data.close_log;
+                close_log = ac.performance_data.log_close;
                 res_total_capital.Add(i, ac.performance_data.total_capital);
                 res_total_pl_ratio.Add(i, ac.performance_data.total_pl_ratio);
                 res_win_rate.Add(i, ac.performance_data.win_rate);
@@ -160,7 +164,7 @@ namespace BTCSIM2
         }
 
 
-        public void startReadSim(int from, int to, int opt_term)
+        public void startReadSim(int from, int to, int opt_term, string lev_or_fixed)
         {
             initialize();
 
@@ -172,30 +176,32 @@ namespace BTCSIM2
                 while((data = sr.ReadLine()) != null)
                 {
                     var ele = data.Split(',');
-                    //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
+                    //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,dd period ratio,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
                     opt_num_trade.Add(no, Convert.ToDouble(ele[1]));
                     opt_win_rate.Add(no, Convert.ToDouble(ele[2]));
                     opt_total_pl.Add(no, Convert.ToDouble(ele[3]));
                     opt_realized_pl.Add(no, Convert.ToDouble(ele[4]));
                     opt_realized_pl_var.Add(no, Convert.ToDouble(ele[5]));
                     opt_total_capital_var.Add(no, Convert.ToDouble(ele[6]));
-                    para_pt.Add(no, Convert.ToDouble(ele[7]));
-                    para_lc.Add(no, Convert.ToDouble(ele[8]));
-                    para_ma_term.Add(no, Convert.ToInt32(ele[11]));
-                    para_nanpin_timing.Add(no, ele[12].Split(':').Select(double.Parse).ToArray());
-                    para_nanpin_lot.Add(no, ele[13].Split(':').Select(double.Parse).ToArray());
+                    opt_sharp_ratio.Add(no, Convert.ToDouble(ele[7]));
+                    opt_dd_period_ratio.Add(no, Convert.ToDouble(ele[8]));
+                    para_pt.Add(no, Convert.ToDouble(ele[9]));
+                    para_lc.Add(no, Convert.ToDouble(ele[10]));
+                    para_ma_term.Add(no, Convert.ToInt32(ele[13]));
+                    para_nanpin_timing.Add(no, ele[14].Split(':').Select(double.Parse).ToArray());
+                    para_nanpin_lot.Add(no, ele[15].Split(':').Select(double.Parse).ToArray());
                     no++;
                 }
             }
             //do sim
             using (var sw = new StreamWriter("read sim.csv",false))
             {
-                sw.WriteLine("i,pt,lc,ma term,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate,earning performance,num trade performance,win rate performance,sim realized pl var,sim total capital var");
+                sw.WriteLine("i,pt,lc,ma term,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate,opt sharp ratio,opt dd period ratio,earning performance,num trade performance,win rate performance,sim realized pl var,sim total capital var");
                 var progress = 0.0;
                 var term_adjust = Convert.ToDouble(opt_term) / Convert.ToDouble((to - from));
                 for (int i = 0; i < no; i++)
                 {
-                    var ac = new Account();
+                    var ac = new Account(lev_or_fixed, true);
                     var sim = new Sim();
                     ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[i], para_lc[i], para_nanpin_timing[i].ToList(), para_nanpin_lot[i].ToList(), para_ma_term[i], true);
                     res_total_capital.Add(i, ac.performance_data.total_capital);
@@ -213,7 +219,8 @@ namespace BTCSIM2
                     var win_rate_performance = Math.Round(ac.performance_data.win_rate, 4);//Math.Round(ac.performance_data.win_rate / opt_win_rate[i], 4);
                     var res = i.ToString() + "," + para_pt[i].ToString() + "," + para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + string.Join(":", para_nanpin_timing[i]) + "," +
                         string.Join(":", para_nanpin_lot[i]) + "," + opt_total_pl[i].ToString() +","+opt_realized_pl[i].ToString()+","+ opt_realized_pl_var[i].ToString() +","+opt_total_capital_var[i].ToString()+","+
-                        opt_num_trade[i].ToString() +","+opt_win_rate[i].ToString() +","+ pl_performance.ToString() +","+num_trade_performance.ToString()+ "," + win_rate_performance.ToString()
+                        opt_num_trade[i].ToString() +","+opt_win_rate[i].ToString() +","+  opt_sharp_ratio[i].ToString() +","+  opt_dd_period_ratio[i].ToString()  +","+
+                        pl_performance.ToString() +","+num_trade_performance.ToString()+ "," + win_rate_performance.ToString()
                         +","+ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString();
                     progress = Math.Round(100.0 * Convert.ToDouble(i) / Convert.ToDouble(no), 2);
                     sw.WriteLine(res);

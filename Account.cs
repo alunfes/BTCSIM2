@@ -15,6 +15,7 @@ namespace BTCSIM2
         public double realized_pl { get; set; }
         public double total_capital { get; set; }
         public double initial_capital { get; set; }
+        public List<double> total_pl_list { get; set; }
         public List<double> realized_pl_list { get; set; }
         public List<double> total_capital_list { get; set; }
         public double total_capital_variance { get; set; }
@@ -31,6 +32,8 @@ namespace BTCSIM2
         public double max_dd { get; set; }
         public double max_pl { get; set; }
         public int num_force_exit { get; set; }
+        public double dd_period_ratio { get; set; }
+        public List<double> log_close { get; set; }
 
         public int num_trade { get; set; }
         public List<int> num_trade_list { get; set; }
@@ -42,14 +45,15 @@ namespace BTCSIM2
         public double total_fee { get; set; }
         public double sharp_ratio { get; set; }
 
-        public PerformanceData()
+        public PerformanceData(double initial_cap)
         {
             total_pl = 0.0;
             total_pl_ratio = 0.0;
             realized_pl_ratio_variance = 0.0;
-            total_capital = 100000.0;
-            initial_capital = 100000.0;
+            total_capital = initial_cap;
+            initial_capital = initial_cap;
             realized_pl = 0.0;
+            total_pl_list = new List<double>();
             realized_pl_list = new List<double>();
             total_capital_list = new List<double>();
             total_capital_variance = 0.0;
@@ -61,6 +65,7 @@ namespace BTCSIM2
             unrealized_pl_list = new List<double>();
             unrealized_pl_ratio = 0.0; //
             unrealized_pl_ratio_list = new List<double>();
+            log_close = new List<double>();
             num_trade = 0;
             num_trade_list = new List<int>();
             num_buy = 0;
@@ -73,6 +78,7 @@ namespace BTCSIM2
             max_dd = 0.0;
             max_pl = 0.0;
             num_force_exit = 0;
+            dd_period_ratio = 0.0;
         }
     }
 
@@ -229,9 +235,9 @@ namespace BTCSIM2
         public List<double> close_log { get; set; }
         public Dictionary<int, double> buy_points { get; set; }
         public Dictionary<int, double> sell_points { get; set; }
+        public bool silent_mode { get; set; }
 
-
-        public LogData()
+        public LogData(bool silent)
         {
             log_data_set = new DataSet();
             log_data_table = new DataTable("LodData");
@@ -245,14 +251,15 @@ namespace BTCSIM2
             log_data_table.Columns.Add("close", typeof(double));
             log_data_table.Columns.Add("order_side", typeof(string));
             log_data_table.Columns.Add("order_type", typeof(string));
-            log_data_table.Columns.Add("order_size", typeof(double));
-            log_data_table.Columns.Add("order_price", typeof(double));
+            log_data_table.Columns.Add("order_size", typeof(string));
+            log_data_table.Columns.Add("order_price", typeof(string));
             log_data_table.Columns.Add("order_message", typeof(string));
             log_data_table.Columns.Add("pt price", typeof(double));
             log_data_table.Columns.Add("lc price", typeof(double));
             log_data_table.Columns.Add("holding_side", typeof(string));
             log_data_table.Columns.Add("holding_price", typeof(double));
             log_data_table.Columns.Add("holding_size", typeof(double));
+            log_data_table.Columns.Add("holding_volume", typeof(double));
             log_data_table.Columns.Add("action", typeof(string));
             log_data_set.Tables.Add(log_data_table);
             total_pl_log = new List<double>();
@@ -260,32 +267,43 @@ namespace BTCSIM2
             close_log = new List<double>();
             buy_points = new Dictionary<int, double>();
             sell_points = new Dictionary<int, double>();
+            silent_mode = silent;
         }
 
         public void add_log_data(int i, string dt, string action, HoldingData hd, OrderData od, PerformanceData pd)
         {
-            total_pl_log.Add(pd.total_pl);
-            var pt = hd.holding_side == "buy" ? od.pt_order + hd.holding_price : hd.holding_price - od.pt_order;
-            var lc = hd.holding_side == "buy" ? hd.holding_price - od.lc_order : hd.holding_price + od.lc_order;
-            if (hd.holding_side == "")
+            if (silent_mode == false)
             {
-                pt = 0;
-                lc = 0;
-            }
-            if (od.order_serial_list.Count > 0)
-            {
-                log_data_table.Rows.Add(pd.total_pl, pd.total_fee, dt, i, MarketData.Open[i], MarketData.High[i], MarketData.Low[i], MarketData.Close[i], od.order_side[od.order_serial_list.Last()], od.order_type[od.order_serial_list.Last()],
-                    od.order_size[od.order_serial_list.Last()], od.order_price[od.order_serial_list.Last()], od.order_message[od.order_serial_list.Last()], pt, lc, hd.holding_side, hd.holding_price, hd.holding_size,
-                    action);
-            }
-            else
-            {
-                log_data_table.Rows.Add(pd.total_pl, pd.total_fee, dt, i, MarketData.Open[i], MarketData.High[i], MarketData.Low[i], MarketData.Close[i], "", "", 0, 0, "", pt, lc, hd.holding_side, hd.holding_price, hd.holding_size, action);
+                total_pl_log.Add(pd.total_pl);
+                var pt = hd.holding_side == "buy" ? od.pt_order + hd.holding_price : hd.holding_price - od.pt_order;
+                var lc = hd.holding_side == "buy" ? hd.holding_price - od.lc_order : hd.holding_price + od.lc_order;
+                if (hd.holding_side == "")
+                {
+                    pt = 0;
+                    lc = 0;
+                }
+                if (od.order_serial_list.Count > 0)
+                {
+                    log_data_table.Rows.Add(pd.total_pl, pd.total_fee, dt, i, MarketData.Open[i], MarketData.High[i], MarketData.Low[i], MarketData.Close[i],
+                        String.Join(":",od.order_side.Values.ToList()), String.Join(":", od.order_type.Values.ToList()), String.Join(":", od.order_size.Values.ToList()),
+                        String.Join(":", od.order_price.Values.ToList()), String.Join(":", od.order_message.Values.ToList()), pt, lc, hd.holding_side, hd.holding_price,
+                        hd.holding_size, hd.holding_volume, action);
+                }
+                else
+                {
+                    log_data_table.Rows.Add(pd.total_pl, pd.total_fee, dt, i, MarketData.Open[i], MarketData.High[i], MarketData.Low[i], MarketData.Close[i], "", "", 0, 0, "",
+                        pt, lc, hd.holding_side, hd.holding_price, hd.holding_size, hd.holding_volume, action);
+                }
             }
         }
     }
 
 
+    /*
+     * 
+     * leveraged trading: always place orders of same leverage using the total capital. (stop simulation when capital become less than min required capital)
+     * fixed amount trading: always place a same amount order. (it may take minus capital)
+     */
     public class Account
     {
         public PerformanceData performance_data;
@@ -293,15 +311,21 @@ namespace BTCSIM2
         public HoldingData holding_data;
         public LogData log_data;
 
+        public const double initial_capital = 10000.0; //in usd
+        public const double minimal_required_capital = 50; //finish trading when initial capital become less than the minimal required capital
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
-        public const double leverage_limit = 25;
+        public const double leverage_limit = 1.5;
         public const double required_margin_maintenace_rate = 0.8;
-        public const double min_capital = 10000; //minimam required capital to allow place order
         public double margin_required = 0.0;
         public double margin_maintenace_rate = 0.0;
         public double leverage = 0.0;
+        public string leveraged_or_fixed_amount_trading = "fixed"; //leveraged trade or fixed amount trade
+        public double fixed_amount = 0.0;
+        public double max_lev_total_amount = 0.0; //maximum position size in leveraged trading
+        public bool silent_mode = false; //true: do not display message, use for opt nanpin and etc.
+        
 
 
         public int start_ind = 0;
@@ -313,10 +337,10 @@ namespace BTCSIM2
         public List<double> total_pl_ratio_list = new List<double>();
         public List<double> total_fund_list = new List<double>();
 
-        public Account()
+        public Account(string leveraged_or_fixed_amount, bool silent)
         {
-            log_data = new LogData();
-            performance_data = new PerformanceData();
+            log_data = new LogData(silent);
+            performance_data = new PerformanceData(initial_capital);
             order_data = new OrderData();
             holding_data = new HoldingData();
             total_pl_list = new List<double>();
@@ -325,23 +349,34 @@ namespace BTCSIM2
             leverage = 0.0;
             start_ind = 0;
             end_ind = 0;
+            silent_mode = silent;
+            if (leveraged_or_fixed_amount == "leveraged")
+                leveraged_or_fixed_amount_trading = leveraged_or_fixed_amount;
+            else if (leveraged_or_fixed_amount == "fixed")
+                leveraged_or_fixed_amount_trading = leveraged_or_fixed_amount;
+            else
+                Console.WriteLine("Account:Invalid  leveraged or fixed amount trading flg !" + ", " + leveraged_or_fixed_amount);
+            fixed_amount = Math.Round(initial_capital * 0.5, 2);
+            max_lev_total_amount = initial_capital * leverage_limit;
         }
+
 
         /*should be called after all sim calc*/
         public void calc_sharp_ratio()
         {
             List<double> change = new List<double>();
-            for (int i = 1; i < log_data.total_pl_log.Count; i++)
-            {
-                if (log_data.total_pl_log[i - 1] != 0)
-                    change.Add((log_data.total_pl_log[i] - log_data.total_pl_log[i - 1]) / log_data.total_pl_log[i - 1]);
+            for (int i = 1; i < performance_data.total_capital_list.Count; i++)
+                if (performance_data.total_capital_list[i-1] > 0)
+                    change.Add( (performance_data.total_capital_list[i] - performance_data.total_capital_list[i-1]) / performance_data.total_capital_list[i - 1]);
                 else
-                    change.Add(0);
-            }
-
-
+                    change.Add(-1.0 * (performance_data.total_capital_list[i] - performance_data.total_capital_list[i - 1]) / performance_data.total_capital_list[i - 1]);
+            var mean = change.Average();
+            var stdv = 0.0;
+            for (int i = 0; i < change.Count; i++)
+                stdv += Math.Pow(change[i] - mean, 2.0);
+            stdv = Math.Sqrt(stdv / Convert.ToDouble(change.Count - 1));
+            /*
             var doubleList = change.Select(a => Convert.ToDouble(a)).ToArray();
-
             //平均値算出
             double mean = doubleList.Average();
             //自乗和算出
@@ -350,12 +385,30 @@ namespace BTCSIM2
             double variance = sum2 / Convert.ToDouble(doubleList.Length) - mean * mean;
             //標準偏差 = 分散の平方根
             var stdv = Math.Sqrt(variance);
-
+            */
             if (stdv != 0)
-                performance_data.sharp_ratio = performance_data.total_pl / stdv;
+                performance_data.sharp_ratio = Math.Round(((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital) / stdv, 6);
             else
                 performance_data.sharp_ratio = 0;
         }
+
+
+        //total capの高値を越えられなかった日の合計　÷　end_ind - start_ind
+        private void calcDDPeriodRatio()
+        {
+            var maxcap = performance_data.total_capital_list[0];
+            var num_dd_days = 0;
+            //count dd days
+            for(int i=1; i<performance_data.total_capital_list.Count; i++)
+            {
+                if (maxcap > performance_data.total_capital_list[i])
+                    num_dd_days++;
+                else
+                    maxcap = performance_data.total_capital_list[i];
+            }
+            performance_data.dd_period_ratio = Math.Round(Convert.ToDouble(num_dd_days) / Convert.ToDouble(performance_data.total_capital_list.Count-1), 4);
+        }
+
 
 
         /*
@@ -389,9 +442,10 @@ namespace BTCSIM2
             performance_data.unrealized_pl_ratio_list.Add(performance_data.unrealized_pl_ratio);
             total_pl_list.Add(performance_data.total_pl);
             total_pl_ratio_list.Add(performance_data.total_pl_ratio);
+            performance_data.log_close.Add(close);
 
 
-            if (performance_data.unrealized_pl_ratio < -0.3)
+            if (performance_data.unrealized_pl_ratio < -0.3 && silent_mode == false && leveraged_or_fixed_amount_trading == "leveraged")
                 Console.WriteLine("high unrealized pl ratio!");
             performance_data.num_trade_list.Add(performance_data.num_trade);
         }
@@ -399,15 +453,26 @@ namespace BTCSIM2
 
         private void calc_margin_data(int i, double close)
         {
-            if (holding_data.holding_side != "")
+            if (holding_data.holding_side != "" && leveraged_or_fixed_amount_trading == "leveraged")
             {
                 margin_required = Math.Round(holding_data.holding_volume / leverage_limit, 2);
                 margin_maintenace_rate = Math.Round(performance_data.total_capital / margin_required, 4);
                 leverage = Math.Round(holding_data.holding_volume / performance_data.total_capital, 4);
+                max_lev_total_amount = Math.Round(performance_data.total_capital * leverage_limit, 4);
                 if (margin_maintenace_rate <= required_margin_maintenace_rate)
                 {
-                    Console.WriteLine("Maintenace Margin is too small, force close all positions!");
-                    Console.WriteLine("Margin Rate=" + margin_maintenace_rate + ", leverage=" + leverage);
+                    if (silent_mode == false)
+                    {
+                        Console.WriteLine("Maintenace Margin is too small, force close all positions!");
+                        Console.WriteLine("Margin Rate=" + margin_maintenace_rate + ", leverage=" + leverage.ToString());
+                    }
+                    performance_data.num_force_exit++;
+                    exit_all(i, MarketData.Dt[i].ToString());
+                }
+                if (leverage >= leverage_limit * 1.5)
+                {
+                    if (silent_mode == false)
+                        Console.WriteLine("Leverage is higer than the limit !" + ", leverage="+leverage.ToString());
                     performance_data.num_force_exit++;
                     exit_all(i, MarketData.Dt[i].ToString());
                 }
@@ -429,7 +494,6 @@ namespace BTCSIM2
         {
             if (start_ind <= 0)
                 start_ind = i;
-            end_ind = i;
             check_cancel(i);
             check_execution(i);
             holding_data.holding_period = holding_data.holding_initial_i > 0 ? i - holding_data.holding_initial_i : 0;
@@ -445,13 +509,14 @@ namespace BTCSIM2
                 log_data.buy_points[i] = 0;
             if (log_data.sell_points.Keys.Contains(i) == false)
                 log_data.sell_points[i] = 0;
-
+            var a = order_data.order_side;
             //Console.WriteLine("unrealized pl=" + performance_data.unrealized_pl + ", maring rate=" + margin_maintenace_rate + ", lev=" + leverage + ", size=" + holding_data.holding_size + ", price=" + holding_data.holding_price + ", capital=" + performance_data.total_capital + ", close=" + close);
         }
 
         //close all holding positions and calc pl
         public void last_day(int i, double close)
         {
+            end_ind = i;
             order_data = new OrderData();
             if (holding_data.holding_side != "")
             {
@@ -475,26 +540,41 @@ namespace BTCSIM2
             }
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
-            log_data.close_log.Add(MarketData.Close[i]);
-            if (log_data.buy_points.Keys.Contains(i) == false)
-                log_data.buy_points[i] = 0;
-            if (log_data.sell_points.Keys.Contains(i) == false)
-                log_data.sell_points[i] = 0;
+            calc_sharp_ratio();
+            calcDDPeriodRatio();
+            if (log_data.silent_mode == false)
+            {
+                log_data.close_log.Add(MarketData.Close[i]);
+                if (log_data.buy_points.Keys.Contains(i) == false)
+                    log_data.buy_points[i] = 0;
+                if (log_data.sell_points.Keys.Contains(i) == false)
+                    log_data.sell_points[i] = 0;
+            }
             //log_data.log_data_table.WriteXml("log.html", XmlWriteMode.DiffGram);
-            //writeCsv("log.csv", log_data.log_data_table);
+            if (log_data.silent_mode==false)
+                writeCsv("log.csv", log_data.log_data_table);
         }
 
+
+        //leveraged trading: order size should be percentage for the total available size (max_lev_total_amount)
+        //fixed amount trading: order size should be percentage for the total fixe amount
         public void entry_order(string type, string side, double size, double price, int i, string dt, string message)
         {
             var flg_check_basics = false;
-            var flg_check_leverage = false;
+            var flg_check_leverage = true;
             var flg_check_min_capital = false;
             var flg_check_type = false;
             if (size > 0 && (side == "buy" || side == "sell"))
                 flg_check_basics = true;
-            if (side != holding_data.holding_side && holding_data.holding_side != "" || ((MarketData.Close[i] * size) + holding_data.holding_volume) / performance_data.total_capital < leverage_limit)
-                flg_check_leverage = true;
-            if (performance_data.total_capital > min_capital)
+            if (leveraged_or_fixed_amount_trading == "leveraged")
+            {
+                if (side == holding_data.holding_side)
+                {
+                    if(((MarketData.Close[i] * size) + holding_data.holding_volume) / performance_data.total_capital > leverage_limit)
+                        flg_check_leverage = false;
+                }
+            }
+            if (performance_data.total_capital > minimal_required_capital)
                 flg_check_min_capital = true;
             if (type == "market" || type == "limit" || type == "stop market")
                 flg_check_type = true;
@@ -506,7 +586,17 @@ namespace BTCSIM2
                 order_data.order_serial_list.Add(order_data.order_serial_num);
                 order_data.order_type[order_data.order_serial_num] = type;
                 order_data.order_side[order_data.order_serial_num] = side;
-                order_data.order_size[order_data.order_serial_num] = size;
+                if (message.Contains("pt") || message.Contains("lc"))
+                {
+                    order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt or lc
+                }
+                else
+                {
+                    if (leveraged_or_fixed_amount_trading == "leveraged")
+                        order_data.order_size[order_data.order_serial_num] = Math.Round(max_lev_total_amount * size / MarketData.Open[i], 6);
+                    else if (leveraged_or_fixed_amount_trading == "fixed")
+                        order_data.order_size[order_data.order_serial_num] = Math.Round(fixed_amount * size / MarketData.Open[i], 6);
+                }
                 order_data.order_price[order_data.order_serial_num] = price;
                 order_data.order_i[order_data.order_serial_num] = i;
                 order_data.order_dt[order_data.order_serial_num] = dt;
@@ -635,6 +725,7 @@ namespace BTCSIM2
                 Console.WriteLine("Invalid maker_taker type in calc_fee ! " + maker_taker);
             }
         }
+
 
         private void check_cancel(int i)
         {
