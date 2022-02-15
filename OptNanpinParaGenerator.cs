@@ -116,9 +116,9 @@ namespace BTCSIM2
         private List<int> generateNumSplit(int max_split)
         {
             var res = new List<int>();
-            for(int i=0; i<max_split; i++)
+            for(int i=1; i<max_split; i++)
             {
-                res.Add(i + 1);
+                res.Add(i+1);
             }
             return res;
         }

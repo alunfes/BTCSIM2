@@ -3,38 +3,46 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+
 
 namespace BTCSIM2
 {
     public class ReadSim
     {
-        public Dictionary<int, double> res_total_capital { get; set; }
-        public Dictionary<int, double> res_total_pl_ratio { get; set; }
-        public Dictionary<int, double> res_win_rate { get; set; }
-        public Dictionary<int, int> res_num_trade { get; set; }
-        public Dictionary<int, int> res_num_buy { get; set; }
-        public Dictionary<int, int> res_num_sell { get; set; }
-        public Dictionary<int, double> res_ave_buy_pl { get; set; }
-        public Dictionary<int, double> res_ave_sell_pl { get; set; }
-        public Dictionary<int, double> res_realized_pl_var { get; set; }
-        public Dictionary<int, double> res_total_capital_var { get; set; }
-        public Dictionary<int, List<double>> res_total_capital_list { get; set; }
-        public Dictionary<int, List<int>> res_num_trade_list { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital { get; set; }
+        public ConcurrentDictionary<int, double> res_total_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_total_pl_ratio { get; set; }
+        public ConcurrentDictionary<int, double> res_win_rate { get; set; }
+        public ConcurrentDictionary<int, int> res_num_trade { get; set; }
+        public ConcurrentDictionary<int, int> res_num_buy { get; set; }
+        public ConcurrentDictionary<int, int> res_num_sell { get; set; }
+        public ConcurrentDictionary<int, double> res_ave_buy_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_ave_sell_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_realized_pl { get; set; }
+        public ConcurrentDictionary<int, double> res_realized_pl_var { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital_var { get; set; }
+        public ConcurrentDictionary<int, double> res_sharp_ratio { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital_gradient { get; set; }
+        public ConcurrentDictionary<int, List<double>> res_total_capital_list { get; set; }
+        public ConcurrentDictionary<int, List<int>> res_num_trade_list { get; set; }
 
-        public Dictionary<int, double> opt_total_pl { get; set; }
-        public Dictionary<int, double> opt_realized_pl { get; set; }
-        public Dictionary<int, double> opt_win_rate { get; set; }
-        public Dictionary<int, double> opt_num_trade { get; set; }
-        public Dictionary<int, double> opt_realized_pl_var { get; set; }
-        public Dictionary<int, double> opt_total_capital_var { get; set; }
-        public Dictionary<int, double> opt_sharp_ratio { get; set; }
-        public Dictionary<int, double> opt_total_capital_gradient { get; set; }
+        public ConcurrentDictionary<int, double> opt_total_pl { get; set; }
+        public ConcurrentDictionary<int, double> opt_realized_pl { get; set; }
+        public ConcurrentDictionary<int, double> opt_win_rate { get; set; }
+        public ConcurrentDictionary<int, double> opt_num_trade { get; set; }
+        public ConcurrentDictionary<int, double> opt_realized_pl_var { get; set; }
+        public ConcurrentDictionary<int, double> opt_total_capital_var { get; set; }
+        public ConcurrentDictionary<int, double> opt_sharp_ratio { get; set; }
+        public ConcurrentDictionary<int, double> opt_total_capital_gradient { get; set; }
 
-        public Dictionary<int, double> para_pt { get; set; }
-        public Dictionary<int, double> para_lc { get; set; }
-        public Dictionary<int, int> para_ma_term { get; set; }
-        public Dictionary<int, double[]> para_nanpin_timing { get; set; }
-        public Dictionary<int, double[]> para_nanpin_lot { get; set; }
+        public ConcurrentDictionary<int, double> para_pt { get; set; }
+        public ConcurrentDictionary<int, double> para_lc { get; set; }
+        public ConcurrentDictionary<int, int> para_ma_term { get; set; }
+        public ConcurrentDictionary<int, int> para_num_split { get; set; }
+        public ConcurrentDictionary<int, double[]> para_nanpin_timing { get; set; }
+        public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
 
 
         public ReadSim()
@@ -43,31 +51,38 @@ namespace BTCSIM2
 
         public void initialize()
         {
-            res_total_capital = new Dictionary<int, double>();
-            res_total_pl_ratio = new Dictionary<int, double>();
-            res_win_rate = new Dictionary<int, double>();
-            res_num_trade = new Dictionary<int, int>();
-            res_num_buy = new Dictionary<int, int>();
-            res_num_sell = new Dictionary<int, int>();
-            res_ave_buy_pl = new Dictionary<int, double>();
-            res_ave_sell_pl = new Dictionary<int, double>();
-            res_realized_pl_var = new Dictionary<int, double>();
-            res_total_capital_var = new Dictionary<int, double>();
-            para_pt = new Dictionary<int, double>();
-            para_lc = new Dictionary<int, double>();
-            para_ma_term = new Dictionary<int, int>();
-            para_nanpin_timing = new Dictionary<int, double[]>();
-            para_nanpin_lot = new Dictionary<int, double[]>();
-            opt_total_pl = new Dictionary<int, double>();
-            opt_realized_pl = new Dictionary<int, double>();
-            opt_win_rate = new Dictionary<int, double>();
-            opt_num_trade = new Dictionary<int, double>();
-            opt_realized_pl_var = new Dictionary<int, double>();
-            opt_total_capital_var = new Dictionary<int, double>();
-            opt_sharp_ratio = new Dictionary<int, double>();
-            opt_total_capital_gradient = new Dictionary<int, double>();
-            res_total_capital_list = new Dictionary<int, List<double>>();
-            res_num_trade_list = new Dictionary<int, List<int>>();
+            res_total_capital = new ConcurrentDictionary<int, double>();
+            res_total_pl = new ConcurrentDictionary<int, double>();
+            res_total_pl_ratio = new ConcurrentDictionary<int, double>();
+            res_win_rate = new ConcurrentDictionary<int, double>();
+            res_num_trade = new ConcurrentDictionary<int, int>();
+            res_num_buy = new ConcurrentDictionary<int, int>();
+            res_num_sell = new ConcurrentDictionary<int, int>();
+            res_ave_buy_pl = new ConcurrentDictionary<int, double>();
+            res_ave_sell_pl = new ConcurrentDictionary<int, double>();
+            res_realized_pl = new ConcurrentDictionary<int, double>();
+            res_realized_pl_var = new ConcurrentDictionary<int, double>();
+            res_total_capital_var = new ConcurrentDictionary<int, double>();
+            res_total_capital_list = new ConcurrentDictionary<int, List<double>>();
+            res_num_trade_list = new ConcurrentDictionary<int, List<int>>();
+            res_sharp_ratio = new ConcurrentDictionary<int, double>();
+            res_total_capital_gradient = new ConcurrentDictionary<int, double>();
+
+            para_pt = new ConcurrentDictionary<int, double>();
+            para_lc = new ConcurrentDictionary<int, double>();
+            para_ma_term = new ConcurrentDictionary<int, int>();
+            para_num_split = new ConcurrentDictionary<int, int>();
+            para_nanpin_timing = new ConcurrentDictionary<int, double[]>();
+            para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
+
+            opt_total_pl = new ConcurrentDictionary<int, double>();
+            opt_realized_pl = new ConcurrentDictionary<int, double>();
+            opt_win_rate = new ConcurrentDictionary<int, double>();
+            opt_num_trade = new ConcurrentDictionary<int, double>();
+            opt_realized_pl_var = new ConcurrentDictionary<int, double>();
+            opt_total_capital_var = new ConcurrentDictionary<int, double>();
+            opt_sharp_ratio = new ConcurrentDictionary<int, double>();
+            opt_total_capital_gradient = new ConcurrentDictionary<int, double>();            
         }
 
 
@@ -79,25 +94,8 @@ namespace BTCSIM2
             initialize();
             var opt_realized_pl = new Dictionary<int, double>();
             var n = 0;
-            //read pl data in opt nanpin and sort by the pl val
-            using(var sr = new StreamReader("opt nanpin.csv"))
-            {
-                var data = sr.ReadLine();
-                while ((data = sr.ReadLine()) != null)
-                {
-                    opt_realized_pl.Add(n, Convert.ToDouble(data.Split(',')[3]));
-                    n++;
-                }
-            }
-            IOrderedEnumerable<KeyValuePair<int, double>> sorted = opt_realized_pl.OrderByDescending(pair => pair.Value);
-            var selected_inds = new List<int>();
-            foreach (var data in sorted)
-            {
-                selected_inds.Add(data.Key);
-                if (selected_inds.Count >= inscope_for_sim)
-                    break;
-            }
-
+            var selected_inds = generateBestPlIndList(inscope_for_sim);
+            /*
             //read only for top inscope_for_sim
             n = 0;
             int m = 0;
@@ -121,6 +119,7 @@ namespace BTCSIM2
             }
 
             //do sim for all selected strategies
+            
             var capital_list_ave = new double[to-from];
             var numtrade_list_ave = new int[to-from];
             var start_ind = 0;
@@ -128,6 +127,7 @@ namespace BTCSIM2
             var close_log = new List<double>();
             for (int i=0; i<m; i++)
             {
+                
                 var ac = new Account(lev_or_fixed, true);
                 var sim = new Sim();
                 ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[i], para_lc[i], para_nanpin_timing[i].ToList(), para_nanpin_lot[i].ToList(), para_ma_term[i], true);
@@ -161,76 +161,129 @@ namespace BTCSIM2
             Console.WriteLine("Ave Buy pl=" + Math.Round(res_ave_buy_pl.Values.ToList().Average(), 4));
             Console.WriteLine("Ave Sell pl=" + Math.Round(res_ave_sell_pl.Values.ToList().Average(), 4));
             displayMultiSimResult(start_ind, end_ind, "Multi MA Div Sim", m, capital_list_ave, numtrade_list_ave, close_log);
+                */
         }
 
 
-        public void startReadSim(int from, int to, int opt_term, string lev_or_fixed)
+        public void startReadSim(int from, int to, int opt_term, string lev_or_fixed, int num_best_pl_for_test)
         {
             initialize();
-
+            var selected_ind = generateBestPlIndList(num_best_pl_for_test); //get index of test targets
             //read param data
-            int no = 0;
             using (var sr = new StreamReader("opt nanpin.csv"))
             {
                 var data = sr.ReadLine();
-                while((data = sr.ReadLine()) != null)
+                int no = 0;
+                int target_no = 0;
+                while ((data = sr.ReadLine()) != null)
                 {
-                    var ele = data.Split(',');
-                    //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
-                    opt_num_trade.Add(no, Convert.ToDouble(ele[1]));
-                    opt_win_rate.Add(no, Convert.ToDouble(ele[2]));
-                    opt_total_pl.Add(no, Convert.ToDouble(ele[3]));
-                    opt_realized_pl.Add(no, Convert.ToDouble(ele[4]));
-                    opt_realized_pl_var.Add(no, Convert.ToDouble(ele[5]));
-                    opt_total_capital_var.Add(no, Convert.ToDouble(ele[6]));
-                    opt_sharp_ratio.Add(no, Convert.ToDouble(ele[7]));
-                    opt_total_capital_gradient.Add(no, Convert.ToDouble(ele[8]));
-                    para_pt.Add(no, Convert.ToDouble(ele[9]));
-                    para_lc.Add(no, Convert.ToDouble(ele[10]));
-                    para_ma_term.Add(no, Convert.ToInt32(ele[13]));
-                    para_nanpin_timing.Add(no, ele[14].Split(':').Select(double.Parse).ToArray());
-                    para_nanpin_lot.Add(no, ele[15].Split(':').Select(double.Parse).ToArray());
+                    if (selected_ind.Contains(no))
+                    {
+                        var ele = data.Split(',');
+                        //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,nanpin timing,lot splits"
+                        opt_num_trade[target_no] = Convert.ToInt32(ele[1]);
+                        opt_win_rate[target_no] = Convert.ToDouble(ele[2]);
+                        opt_total_pl[target_no] = Convert.ToDouble(ele[3]);
+                        opt_realized_pl[target_no] = Convert.ToDouble(ele[4]);
+                        opt_realized_pl_var[target_no] = Convert.ToDouble(ele[5]);
+                        opt_total_capital_var[target_no] = Convert.ToDouble(ele[6]);
+                        opt_sharp_ratio[target_no] = Convert.ToDouble(ele[7]);
+                        opt_total_capital_gradient[target_no] = Convert.ToDouble(ele[8]);
+                        para_pt[target_no] = Convert.ToDouble(ele[9]);
+                        para_lc[target_no] = Convert.ToDouble(ele[10]);
+                        para_num_split[target_no] = Convert.ToInt32(ele[11]);
+                        para_ma_term[target_no] = Convert.ToInt32(ele[13]);
+                        para_nanpin_timing[target_no] = ele[14].Split(':').Select(double.Parse).ToArray();
+                        para_nanpin_lot[target_no] = ele[15].Split(':').Select(double.Parse).ToArray();
+                        target_no++;
+                    }
                     no++;
                 }
             }
             //do sim
-            using (var sw = new StreamWriter("read sim.csv",false))
+            using (StreamWriter writer = new StreamWriter("read sim.csv", false))
+            using (var sw = TextWriter.Synchronized(writer))
             {
-                sw.WriteLine("i,pt,lc,ma term,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate,opt sharp ratio,opt total capital gradient,earning performance,num trade performance,win rate performance,sim realized pl var,sim total capital var");
+                sw.WriteLine("No,pt,lc,ma term,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate," +
+                    "opt sharp ratio,opt total capital gradient,test total pl,test realized pl,test realized pl var,test total capital var,test num trade,test win rate," +
+                    "test sharp ratio,test total capital gradient");
                 var progress = 0.0;
-                var term_adjust = Convert.ToDouble(opt_term) / Convert.ToDouble((to - from));
-                for (int i = 0; i < no; i++)
+                var no = 0;
+                var ac_list = new ConcurrentDictionary<int, Account>();
+                Parallel.For(0, para_pt.Count, i =>
                 {
-                    var ac = new Account(lev_or_fixed, true);
                     var sim = new Sim();
-                    ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, para_pt[i], para_lc[i], para_nanpin_timing[i].ToList(), para_nanpin_lot[i].ToList(), para_ma_term[i], true);
-                    res_total_capital.Add(i, ac.performance_data.total_capital);
-                    res_total_pl_ratio.Add(i, ac.performance_data.unrealized_pl_ratio);
-                    res_win_rate.Add(i, ac.performance_data.win_rate);
-                    res_num_trade.Add(i, ac.performance_data.num_trade);
-                    res_num_buy.Add(i, ac.performance_data.num_buy);
-                    res_num_sell.Add(i, ac.performance_data.num_sell);
-                    res_ave_buy_pl.Add(i, ac.performance_data.buy_pl_ratio_list.Average());
-                    res_ave_sell_pl.Add(i, ac.performance_data.sell_pl_ratio_list.Average());
-                    res_realized_pl_var.Add(i, ac.performance_data.realized_pl_ratio_variance);
-                    res_total_capital_var.Add(i, ac.performance_data.total_capital_variance);
-                    var pl_performance = Math.Round(term_adjust * ac.performance_data.realized_pl,4);//Math.Round(term_adjust * ac.performance_data.realized_pl - opt_pl[i],4);
-                    var num_trade_performance = Math.Round(term_adjust * ac.performance_data.num_trade,4); Math.Round(term_adjust * ac.performance_data.num_trade - opt_num_trade[i],4);
-                    var win_rate_performance = Math.Round(ac.performance_data.win_rate, 4);//Math.Round(ac.performance_data.win_rate / opt_win_rate[i], 4);
-                    var res = i.ToString() + "," + para_pt[i].ToString() + "," + para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + string.Join(":", para_nanpin_timing[i]) + "," +
-                        string.Join(":", para_nanpin_lot[i]) + "," + opt_total_pl[i].ToString() +","+opt_realized_pl[i].ToString()+","+ opt_realized_pl_var[i].ToString() +","+opt_total_capital_var[i].ToString()+","+
-                        opt_num_trade[i].ToString() +","+opt_win_rate[i].ToString() +","+  opt_sharp_ratio[i].ToString() +","+ opt_total_capital_gradient[i].ToString()  +","+
-                        pl_performance.ToString() +","+num_trade_performance.ToString()+ "," + win_rate_performance.ToString()
-                        +","+ac.performance_data.realized_pl_ratio_variance.ToString()+","+ac.performance_data.total_capital_variance.ToString();
-                    progress = Math.Round(100.0 * Convert.ToDouble(i) / Convert.ToDouble(no), 2);
+                    var ac = new Account(lev_or_fixed, true);
+                    ac_list[i] = sim.sim_madiv_nanpin_ptlc(from, to, ac,
+                            para_pt[i],
+                            para_lc[i],
+                            para_nanpin_timing[i].ToList(),
+                            para_nanpin_lot[i].ToList(),
+                            para_ma_term[i],
+                            true
+                            );
+
+                    res_total_capital[i] = ac_list[i].performance_data.total_capital;
+                    res_total_pl[i] = ac_list[i].performance_data.total_pl;
+                    res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
+                    res_win_rate[i] = ac_list[i].performance_data.win_rate;
+                    res_num_trade[i] = ac_list[i].performance_data.num_trade;
+                    res_num_buy[i] = ac_list[i].performance_data.num_buy;
+                    res_num_sell[i] = ac_list[i].performance_data.num_sell;
+                    res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
+                    res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                    res_realized_pl[i] = ac_list[i].performance_data.realized_pl;
+                    res_realized_pl_var[i] = ac_list[i].performance_data.realized_pl_ratio_variance;
+                    res_total_capital_var[i] = ac_list[i].performance_data.total_capital_variance;
+                    res_sharp_ratio[i] = ac_list[i].performance_data.sharp_ratio;
+                    res_total_capital_gradient[i] = ac_list[i].performance_data.total_capital_gradient;
+
+                    var res = no.ToString() + "," + para_pt[i].ToString() + "," +
+                    para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," +
+                    string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
+                    opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
+                    opt_realized_pl_var[i].ToString() + "," + opt_total_capital_var[i].ToString() + "," +
+                    opt_num_trade[i].ToString() + "," + opt_win_rate[i].ToString() + "," +
+                    opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," +
+                    res_total_pl[i].ToString() + "," + res_realized_pl[i].ToString() + "," +
+                    res_realized_pl_var[i].ToString() + "," + res_total_capital_var[i].ToString() + "," +
+                    res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +
+                    res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString();
+                    progress = Math.Round(100.0 * Convert.ToDouble(no) / Convert.ToDouble(para_lc.Count), 2);
                     sw.WriteLine(res);
-                    Console.WriteLine(res);
-                    Console.WriteLine(i.ToString() + "/" + no.ToString() + " - " + progress.ToString() + "%" + ": pl performance=" + pl_performance
-                        +" ,win rate performance="+ win_rate_performance +" ,num trade parformance="+ num_trade_performance);
-                }
+                    Console.WriteLine(no.ToString() + "/" + para_lc.Count.ToString() + " - " + progress.ToString() + "%" +
+                        ": test total pl=" + res_total_pl[i].ToString()+
+                        ", test sharp ratio="+res_sharp_ratio[i].ToString()+
+                        ", test win rate="+res_win_rate[i].ToString());
+                    no++;
+                });
             }
         }
 
+
+        private List<int> generateBestPlIndList(int num_select)
+        {
+            var pl = new Dictionary<int, double>();
+            var n = 0;
+            using (var sr = new StreamReader("opt nanpin.csv"))
+            {
+                var data = sr.ReadLine();
+                while ((data = sr.ReadLine()) != null)
+                {
+                    pl[n] = Convert.ToDouble(data.Split(',')[3]);
+                    n++;
+                }
+            }
+            IOrderedEnumerable<KeyValuePair<int, double>> sorted = pl.OrderByDescending(pair => pair.Value);
+            var selected_inds = new List<int>();
+            foreach (var data in sorted)
+            {
+                selected_inds.Add(data.Key);
+                if (selected_inds.Count >= num_select)
+                    break;
+            }
+            return selected_inds;
+        }
 
         private void displayMultiSimResult(int start_ind, int end_ind, string title, int num_multi_sim, double[] capital_list, int[] num_trade_list, List<double> close)
         {

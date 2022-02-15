@@ -286,10 +286,11 @@ namespace BTCSIM2
             else if( key == "read sim")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
-                var read_sim_from = 250000;
-                var read_sim_to = 500000;
+                var read_sim_from = MarketData.Close.Count - 300000;
+                var read_sim_to = MarketData.Close.Count-1;
+                var num_best_pl_for_test = 10;
                 var rsim = new ReadSim();
-                rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading);
+                rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 
             }
             else if(key == "read multi")
