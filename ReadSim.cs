@@ -230,8 +230,14 @@ namespace BTCSIM2
                     res_num_trade[i] = ac_list[i].performance_data.num_trade;
                     res_num_buy[i] = ac_list[i].performance_data.num_buy;
                     res_num_sell[i] = ac_list[i].performance_data.num_sell;
-                    res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
-                    res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                    if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
+                        res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
+                    else
+                        res_ave_buy_pl[i] = 0;
+                    if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
+                        res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                    else
+                        res_ave_sell_pl[i] = 0;
                     res_realized_pl[i] = ac_list[i].performance_data.realized_pl;
                     res_realized_pl_var[i] = ac_list[i].performance_data.realized_pl_ratio_variance;
                     res_total_capital_var[i] = ac_list[i].performance_data.total_capital_variance;
