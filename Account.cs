@@ -311,9 +311,9 @@ namespace BTCSIM2
         public HoldingData holding_data;
         public LogData log_data;
 
-        public const double initial_capital = 10000.0; //in usd
+        public const double initial_capital = 100000.0; //in usd
         public const double minimal_required_capital = 100; //finish trading when initial capital become less than the minimal required capital
-        public const double minimal_order_amount = 50;
+        public const double minimal_order_size = 0.001;
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
@@ -357,7 +357,7 @@ namespace BTCSIM2
                 leveraged_or_fixed_amount_trading = leveraged_or_fixed_amount;
             else
                 Console.WriteLine("Account:Invalid  leveraged or fixed amount trading flg !" + ", " + leveraged_or_fixed_amount);
-            fixed_amount = Math.Round(initial_capital * 0.5, 2);
+            fixed_amount = Math.Round(MarketData.Close.Max() * 1.1, 2); //fixed tradingは常に一定金額での取引なのでBTC価格がいくらでも0．001のサイズは保証できる値にすべき
             max_lev_total_amount = initial_capital * leverage_limit;
         }
 
@@ -527,10 +527,15 @@ namespace BTCSIM2
             performance_data.total_capital_variance = calcStdiv(performance_data.total_capital_list);
             double calcStdiv(List<double> data)
             {
-                var mean = data.Average();
-                double sum2 = data.Select(a => a * a).Sum();
-                double variance = sum2 / data.Count - mean * mean;
-                return Math.Sqrt(variance);
+                if (data.Count > 0)
+                {
+                    var mean = data.Average();
+                    double sum2 = data.Select(a => a * a).Sum();
+                    double variance = sum2 / data.Count - mean * mean;
+                    return Math.Sqrt(variance);
+                }
+                else
+                    return 0;
             }
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
@@ -552,6 +557,7 @@ namespace BTCSIM2
 
         //leveraged trading: order size should be percentage for the total available size (max_lev_total_amount)
         //fixed amount trading: order size should be percentage for the total fixe amount. no requirement for minimal capital, can be taken minus capital val
+        //sim class input size as a percentage to the actual total size, total size is fixed amount size or leveraged size.
         public void entry_order(string type, string side, double size, double price, int i, string dt, string message)
         {
             if (stop_sim == false || (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))) //can place order when stop_sim == false, pt, lc, exit all order can be placed as exception 
@@ -594,7 +600,7 @@ namespace BTCSIM2
                     order_size = Math.Round(max_lev_total_amount * size / MarketData.Open[i], 4);
                 else if (leveraged_or_fixed_amount_trading == "fixed")
                     order_size = Math.Round(fixed_amount * size / MarketData.Open[i], 4);
-                if (order_size * MarketData.Open[i] <= minimal_order_amount)
+                if (order_size < minimal_order_size)
                 {
                     flg_check_order_size = false;
                     stop_sim = true;
@@ -610,7 +616,7 @@ namespace BTCSIM2
                     order_data.order_side[order_data.order_serial_num] = side;
                     if (message.Contains("pt") || message.Contains("lc") || message.Contains("exit all"))
                     {
-                        order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt, lc or force exit
+                        order_data.order_size[order_data.order_serial_num] = size; //exit exact the same size of current holding when pt, lc or force exit. it's
                     }
                     else
                     {
