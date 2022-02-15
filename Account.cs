@@ -357,7 +357,7 @@ namespace BTCSIM2
                 leveraged_or_fixed_amount_trading = leveraged_or_fixed_amount;
             else
                 Console.WriteLine("Account:Invalid  leveraged or fixed amount trading flg !" + ", " + leveraged_or_fixed_amount);
-            fixed_amount = Math.Round(MarketData.Close.Max() * 1.1, 2); //fixed tradingは常に一定金額での取引なのでBTC価格がいくらでも0．001のサイズは保証できる値にすべき
+            fixed_amount = Math.Round(MarketData.High.Max() * 1.1, 2); //fixed tradingは常に一定金額での取引なのでBTC価格がいくらでも0．001のサイズは保証できる値にすべき
             max_lev_total_amount = initial_capital * leverage_limit;
         }
 

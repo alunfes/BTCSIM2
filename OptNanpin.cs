@@ -112,8 +112,8 @@ namespace BTCSIM2
                         opt_para_gen.para_num_split[i].ToString() + "," +
                         opt_para_gen.para_func[i].ToString() + "," +
                         opt_para_gen.para_ma_term[i].ToString() + "," +
-                        opt_para_gen.para_nanpin_timing[i].ToString() + "," +
-                        opt_para_gen.para_nanpin_lot[i].ToString();
+                        string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
+                        string.Join(":",opt_para_gen.para_nanpin_lot[i]);
                         sw.WriteLine(res);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
