@@ -208,11 +208,14 @@ namespace BTCSIM2
             else //update pt lc price
             {
                 //最初のエントリーサイズに必要なコストの２倍以上の利益が出ていたら売って逆のsideで再エントリーする
-                var min_amount_for_side_change = 100000000.0;
+                var min_amount_for_side_change = ac.holding_data.holding_volume * (pt_ratio * 0.7);
+
+                /*
                 if (ac.leveraged_or_fixed_amount_trading == "fixed")
                     min_amount_for_side_change = ac.fixed_amount * lot_splits[0] *0.014;
                 else if (ac.leveraged_or_fixed_amount_trading == "leveraged")
                     min_amount_for_side_change = ac.max_lev_total_amount * lot_splits[0] * 0.014;
+                */
                 if (ac.holding_data.holding_side != ma_side && ac.performance_data.unrealized_pl > min_amount_for_side_change)
                 {
                     var pt = MarketData.Close[i];
