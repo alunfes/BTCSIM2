@@ -179,5 +179,60 @@ namespace BTCSIM2
 
             return ad;
         }
+
+
+
+        public StrategyActionData NanpinPtlcMADivRapidSideChangeStrategy(int i, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, Account ac)
+        {
+            var ad = new StrategyActionData();
+            var ma_side = MarketData.Divergence[ma_term][i] > 0 ? "sell":"buy";
+            var opposite_side = ma_side == "buy" ? "sell" : "buy";
+
+            if (ac.holding_data.holding_side == "") //no holding place a first entry order
+            {
+                if (ac.order_data.getNumOrders() > 0) //pt or lc was executed and nanpin limit order is remained
+                {
+                    ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
+                    ad.add_action("ptlc", "", "", 0, 0, 0, 0, -1, "cancel pt lc order");
+                }
+                else //proceed for nanpin entry
+                {
+                    var pt = (ma_side == "buy" ? Math.Round(MarketData.Close[i] * pt_ratio) : Math.Round(MarketData.Close[i] * pt_ratio));
+                    var lc = (ma_side == "buy" ? Math.Round(MarketData.Close[i] * lc_ratio) : Math.Round(MarketData.Close[i] * lc_ratio));
+                    ad.add_action("entry", ma_side, "market", 0, lot_splits[0], 0, 0, -1, "entry order"); //first entry
+                    for (int j = 0; j < nanpin_timing.Count(); j++)
+                        ad.add_action("entry", ma_side, "limit", ma_side == "buy" ? Math.Round(MarketData.Close[i] - MarketData.Close[i] * nanpin_timing[j]) : Math.Round(MarketData.Close[i] + MarketData.Close[i] * nanpin_timing[j]), lot_splits[j + 1], 0, 0, 0, "nanpin entry");
+                    ad.add_action("ptlc", opposite_side, "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
+                }
+            }
+            else //update pt lc price
+            {
+                //最初のエントリーサイズに必要なコストの２倍以上の利益が出ていたら売って逆のsideで再エントリーする
+                var min_amount_for_side_change = 100000000.0;
+                if (ac.leveraged_or_fixed_amount_trading == "fixed")
+                    min_amount_for_side_change = ac.fixed_amount * lot_splits[0] *0.014;
+                else if (ac.leveraged_or_fixed_amount_trading == "leveraged")
+                    min_amount_for_side_change = ac.max_lev_total_amount * lot_splits[0] * 0.014;
+                if (ac.holding_data.holding_side != ma_side && ac.performance_data.unrealized_pl > min_amount_for_side_change)
+                {
+                    var pt = MarketData.Close[i];
+                    var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * lc_ratio) : Math.Round(ac.holding_data.holding_price * lc_ratio));
+                    ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
+                    ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //revise pt lc order
+                }
+                else
+                {
+                    var pt = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * pt_ratio) : Math.Round(ac.holding_data.holding_price * pt_ratio));
+                    var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * lc_ratio) : Math.Round(ac.holding_data.holding_price * lc_ratio));
+                    if (ac.order_data.pt_order != pt || ac.order_data.lc_order != lc)
+                        ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
+                }
+            }
+
+            //if (ac.holding_data.holding_size > 1.01)
+            //    Console.WriteLine("Holding size is larger than 1.0!");
+
+            return ad;
+        }
     }
 }

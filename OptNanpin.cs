@@ -81,13 +81,12 @@ namespace BTCSIM2
                     {
                         var sim = new Sim();
                         var ac = new Account(lev_fixed_trading,true);
-                        ac_list[i] = sim.sim_madiv_nanpin_ptlc(from, to, ac,
+                        ac_list[i] = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac,
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i].ToList(),
                             opt_para_gen.para_nanpin_lot[i].ToList(),
-                            opt_para_gen.para_ma_term[i],
-                            true
+                            opt_para_gen.para_ma_term[i]
                             );
                         res_total_capital[i] = ac_list[i].performance_data.total_capital;
                         res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;

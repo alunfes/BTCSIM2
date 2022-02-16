@@ -65,10 +65,10 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            var to = 100000;
-            //var to = MarketData.Close.Count - 1;
-            var leveraged_or_fixed_trading = "leveraged";
-            //var leveraged_or_fixed_trading = "fixed";
+            //var to = 100000;
+            var to = MarketData.Close.Count - 100000;
+            //var leveraged_or_fixed_trading = "leveraged";
+            var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 1000;
 
 
@@ -272,11 +272,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0044,0.0088,0.0131,0.0175,0.0219,0.0263,0.0306,0.035,0.0394,0.0438,0.0481,0.0525 };
-                var lot_splits = new List<double>() { 0.05,0.05345,0.057138,0.061081,0.065295,0.0698,0.074617,0.079765,0.085269,0.091153,0.097442,0.104166,0.111353 };
-                var pt_ratio = 0.021;
-                var lc_ratio = 0.057;
-                var ma_term = 15;    
+                var nanpin_timing = new List<double>() { 0.0033,0.0065,0.0098,0.013,0.0163,0.0196,0.0228,0.0261,0.0293,0.0326,0.0359,0.0391,0.0424,0.0456 };
+                var lot_splits = new List<double>() { 0.075,0.073725,0.072472,0.07124,0.070029,0.068838,0.067668,0.066517,0.065387,0.064275,0.063182,0.062108,0.061053,0.060015,0.058994 };
+                var pt_ratio = 0.024;
+                var lc_ratio = 0.049;
+                var ma_term = 7;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
