@@ -22,6 +22,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double[]> para_nanpin_timing { get; set; }
         public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, double[]> para_min_lot { get; set; }
+        public ConcurrentDictionary<int, int> para_strategy { get; set; }
 
 
         private void initializer()
@@ -34,6 +35,7 @@ namespace BTCSIM2
             para_nanpin_timing = new ConcurrentDictionary<int, double[]>();
             para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
             para_min_lot = new ConcurrentDictionary<int, double[]>();
+            para_strategy = new ConcurrentDictionary<int, int>();
         }
 
 
@@ -46,20 +48,20 @@ namespace BTCSIM2
             var num_split = generateNumSplit(max_split);
             var ma_term = new List<int>(MarketData.terms);
             var min_lot = generateMinLot();
-            var para_ind_combination = generateParamIndCombination(num_select_params, pt, lc, num_split, func, ma_term, min_lot);
-            var no = 0;
+            var strategy = generateStrategy();
+            var para_ind_combination = generateParamIndCombination(num_select_params, pt, lc, num_split, func, ma_term, min_lot, strategy); //generate combination of all parameters
             //randomly select the parameter combinations and get nanpin timing / lot
             var random_params_ind = new ConcurrentDictionary<int, int>();
             var ran = new Random();
             var ind_list = new List<int>(para_ind_combination.Keys.ToList());
-            for(int i=0; i<num_select_params; i++)
+            for(int i=0; i<num_select_params; i++) //randomly select the parameter combination
             {
                 var s = ran.Next(0,ind_list.Count);
                 random_params_ind[i] = ind_list[s];
                 ind_list.RemoveAt(s);
             }
             var nanpin_dict = new ConcurrentDictionary<int, Dictionary<string, List<double[]>>>();
-            Parallel.For(0, num_select_params, i =>
+            Parallel.For(0, num_select_params, i => //generate nanpin timinig / lot using geometric series function
             {
                 nanpin_dict[i] = getNanpinParam2(
                     pt[para_ind_combination[random_params_ind[i]][0]],
@@ -75,6 +77,7 @@ namespace BTCSIM2
                 para_ma_term[i] = ma_term[para_ind_combination[random_params_ind[i]][4]];
                 para_nanpin_timing[i] = nanpin_dict[i].Values.ToList()[0].ToList()[0];
                 para_nanpin_lot[i] = nanpin_dict[i].Values.ToList()[0].ToList()[1];
+                para_strategy[i] = strategy[para_ind_combination[random_params_ind[i]][6]];
             });
 
         }
@@ -129,14 +132,20 @@ namespace BTCSIM2
                 res.Add((i + 1) * 0.005);
             return res;
         }
+        private List<int> generateStrategy()
+        {
+            return new List<int> {0,1 }; //normal or rapid side change
+        }
 
-        private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num_select, List<double> pt, List<double> lc, List<int> num_split, List<int> funcs, List<int> ma_term, List<double> min_lot)
+
+        //各パラメータのランダムな組み合わせを生成する。
+        private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num_select, List<double> pt, List<double> lc, List<int> num_split, List<int> funcs, List<int> ma_term, List<double> min_lot, List<int> strategy)
         {
             var res = new ConcurrentDictionary<string, List<int>>();
             var ran = new Random();
             for(int i=0; i<num_select; i++)
             {
-                var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count) };
+                var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0,strategy.Count) };
                 res[string.Join("", ind_combi)] = ind_combi;
             }
             while(true)
@@ -145,7 +154,7 @@ namespace BTCSIM2
                     break;
                 else
                 {
-                    var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count) };
+                    var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0, strategy.Count) };
                     res[string.Join("", ind_combi)] = ind_combi;
                 }
             }

@@ -34,6 +34,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double[]> para_nanpin_timing { get; set; }
         public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, double[]> para_min_lot { get; set; }
+        public ConcurrentDictionary<int, int> para_strategy { get; set; }
 
 
         private void initializer()
@@ -56,6 +57,7 @@ namespace BTCSIM2
             para_nanpin_timing = new ConcurrentDictionary<int, double[]>();
             para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
             para_min_lot = new ConcurrentDictionary<int, double[]>();
+            para_strategy = new ConcurrentDictionary<int, int>();
         }
 
 
@@ -73,7 +75,7 @@ namespace BTCSIM2
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits");
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
@@ -81,7 +83,15 @@ namespace BTCSIM2
                     {
                         var sim = new Sim();
                         var ac = new Account(lev_fixed_trading,true);
-                        ac_list[i] = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac,
+                        ac_list[i] = opt_para_gen.para_strategy[i] == 0 ? sim.sim_madiv_nanpin_ptlc(from, to, ac,
+                            opt_para_gen.para_pt[i],
+                            opt_para_gen.para_lc[i],
+                            opt_para_gen.para_nanpin_timing[i].ToList(),
+                            opt_para_gen.para_nanpin_lot[i].ToList(),
+                            opt_para_gen.para_ma_term[i],
+                            false
+                            ) : 
+                            sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac,
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i].ToList(),
@@ -111,6 +121,7 @@ namespace BTCSIM2
                         opt_para_gen.para_num_split[i].ToString() + "," +
                         opt_para_gen.para_func[i].ToString() + "," +
                         opt_para_gen.para_ma_term[i].ToString() + "," +
+                        opt_para_gen.para_strategy[i].ToString() +","+
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]);
                         sw.WriteLine(res);

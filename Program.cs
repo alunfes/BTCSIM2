@@ -272,11 +272,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.011,0.022,0.0329,0.0439 };
-                var lot_splits = new List<double>() { 0.145,0.16849,0.195785,0.227503,0.264358 };
-                var pt_ratio = 0.025;
-                var lc_ratio = 0.055;
-                var ma_term = 10;    
+                var nanpin_timing = new List<double>() { 0.0079,0.0157,0.0236,0.0314,0.0393,0.0472,0.055 };
+                var lot_splits = new List<double>() { 0.182456,0.162183,0.144163,0.128145,0.113906,0.10125,0.09,0.08 };
+                var pt_ratio = 0.033;
+                var lc_ratio = 0.063;
+                var ma_term = 280;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();

@@ -218,7 +218,7 @@ namespace BTCSIM2
                 */
                 if (ac.holding_data.holding_side != ma_side && ac.performance_data.unrealized_pl > min_amount_for_side_change)
                 {
-                    var pt = 0;
+                    var pt = Math.Abs(MarketData.Close[i] - ac.holding_data.holding_price);
                     var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * lc_ratio) : Math.Round(ac.holding_data.holding_price * lc_ratio));
                     ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
                     ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //revise pt lc order
