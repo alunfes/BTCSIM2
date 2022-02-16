@@ -163,6 +163,8 @@ namespace BTCSIM2
 
         static private string generateCombinedLineChart(int chart_id, List<double> data, List<double> close)
         {
+            var con_data = shortenDataList(data, 0.1);
+            var con_close = shortenDataList(close, 0.1);
             var res = @"<canvas id = 'myLineChart" + chart_id.ToString() + "'></canvas>" + "\r\n" +
                 @"<script>" + "\r\n" +
                 @"window.addEventListener('load', function(){" + "\r\n" +
@@ -176,18 +178,37 @@ namespace BTCSIM2
                 @"</script>" + "\r\n" +
                 @"<script>" + "\r\n" +
                 @"var barChartData = {" + "\r\n" +
-                GenerateNumericalLabel(data) + "\r\n" +
+                GenerateNumericalLabel(con_data) + "\r\n" +
                 @"datasets:[" + "\r\n" +
-                generatePlotChart(1, "Total Capital", data, new int[] { 50, 255, 128 }) + "\r\n" +
-                generatePlotChart(2, "Close", close, new int[] { 255, 128, 50 }) + "\r\n" +
+                generatePlotChart(1, "Total Capital", con_data, new int[] { 50, 255, 128 }) + "\r\n" +
+                generatePlotChart(2, "Close", con_close, new int[] { 255, 128, 50 }) + "\r\n" +
                 @"]};" + "\r\n" + //need to check
                 @"</script>" + "\r\n" +
-                generateComplexChartOption(data, close);
+                generateComplexChartOption(con_data, con_close);
             return res;
         }
 
+
+        static List<double> shortenDataList(List<double> data, double shorten_percentage)
+        {
+            var num_short = Convert.ToInt32(Math.Round(data.Count * shorten_percentage));
+            var move_window = Convert.ToInt32(Convert.ToDouble(data.Count) / Convert.ToDouble(num_short));
+            var res = new List<double>();
+            var i = 0;
+            while (true)
+            {
+                res.Add(data[i*move_window]);
+                i++;
+                if (res.Count >= num_short)
+                    break;
+            }
+            return res;
+        }
+
+
         static private string generateLineChart(int chart_id, string label, List<double> data)
         {
+            var con_data = shortenDataList(data, 0.1);
             var res = @"<canvas id = 'myLineChart" + chart_id.ToString() + "'></canvas>" + "\r\n" +
                 @"<script>" + "\r\n" +
                 @"window.addEventListener('load', function(){" + "\r\n" +
@@ -195,10 +216,10 @@ namespace BTCSIM2
                 @"window.myBar = new Chart(ctx, {" + "\r\n" +
                 @"type: 'line'," + "\r\n" +
                 @"data:{" + "\r\n" +
-                GenerateNumericalLabel(data) +
+                GenerateNumericalLabel(con_data) +
                 @"datasets:[{" + "\r\n" +
                 @"label:""" + label + @"""," + "\r\n" +
-                GenerateData(data) + "\r\n" +
+                GenerateData(con_data) + "\r\n" +
                 @"}]}})});" + "\r\n" +
                 @"</script>" + "\r\n";
             return res;

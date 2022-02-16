@@ -261,6 +261,7 @@ namespace BTCSIM2
                         ": test total pl=" + res_total_pl[i].ToString()+
                         ", test sharp ratio="+res_sharp_ratio[i].ToString()+
                         ", test win rate="+res_win_rate[i].ToString());
+                    ac_list.TryRemove(i, out var d);
                     no++;
                 });
             }
