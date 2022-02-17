@@ -93,11 +93,13 @@ namespace BTCSIM2
                 close.Add(Convert.ToDouble(data[5]));
                 volume.Add(Convert.ToDouble(data[6]));
             }
+            /*
             Console.WriteLine("datetime, open, high, low, close, volume");
             for (int i = 0; i < 30; i++)
             {
                 Console.WriteLine(dt[i].ToString() + ", " + open[i].ToString() + ", " + high[i].ToString() + ", " + low[i].ToString() + ", " + close[i].ToString() + ", " + volume[i].ToString());
             }
+            */
             Console.WriteLine("Completed read data.");
         }
 

@@ -52,8 +52,10 @@ namespace BTCSIM2
                 Console.WriteLine("\"madiv nanpin\" : MA div nanpin sim");
                 Console.WriteLine("\"read sim\" : Read MA div nanpin sim");
                 Console.WriteLine("\"read multi\" : Read multi MA div nanpin sim");
+                Console.WriteLine("\"opt select\" : Select Opt Nanpin id in best opt pl oreder");
                 key = Console.ReadLine();
-                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" || key == "read sim" || key == "read multi")
+                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" ||
+                    key == "read sim" || key == "read multi" || key == "opt select")
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -272,11 +274,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0079,0.0157,0.0236,0.0314,0.0393,0.0472,0.055 };
-                var lot_splits = new List<double>() { 0.182456,0.162183,0.144163,0.128145,0.113906,0.10125,0.09,0.08 };
-                var pt_ratio = 0.033;
-                var lc_ratio = 0.063;
-                var ma_term = 280;    
+                var nanpin_timing = new List<double>() { 0.0068,0.0136,0.0205,0.0273,0.0341,0.041,0.0478,0.0546,0.0614,0.0682,0.0751 };
+                var lot_splits = new List<double>() { 0.318844,0.218536,0.149785,0.102663,0.070365,0.048228,0.033056,0.022656,0.015529,0.010643,0.007295,0.005 };
+                var pt_ratio = 0.036;
+                var lc_ratio = 0.082;
+                var ma_term = 150;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
@@ -299,6 +301,45 @@ namespace BTCSIM2
                 Console.WriteLine("Read multi MA div nanpin Sim");
                 var rs = new ReadSim();
                 rs.startMultiReadSim(from, to, 5, leveraged_or_fixed_trading);
+            }
+            else if (key == "opt select")
+            {
+                Console.WriteLine("Please input opt strategy id for test.");
+                var d = Console.ReadLine();
+                var opt_ind = 0;
+                if (int.TryParse(d, out opt_ind) == false)
+                    Console.WriteLine("invalid input !");
+                else
+                {
+                    double pt, lc;
+                    List<double> nanpin_timing, nanpin_lot;
+                    int strategy, ma_term;
+
+                    var rs = new ReadSim();
+                    var ind_list = rs.generateBestPlIndList(num_opt_calc);
+                    using (var sr = new StreamReader("opt nanpin.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        for (int i = 0; i < ind_list[opt_ind]; i++)
+                            sr.ReadLine();
+                        data = sr.ReadLine();
+                        var ele = data.Split(',');
+                        pt = Convert.ToDouble(ele[9]);
+                        lc = Convert.ToDouble(ele[10]);
+                        ma_term = Convert.ToInt32(ele[13]);
+                        nanpin_timing = ele[15].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[16].Split(':').Select(double.Parse).ToList();
+                        strategy = Convert.ToInt32(ele[14]);
+
+                    }
+                    var ac = new Account(leveraged_or_fixed_trading, false);
+                    var sim = new Sim();
+                    if (strategy ==0)
+                        ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt, lc, nanpin_timing, nanpin_lot, ma_term, true);
+                    else
+                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac, pt, lc, nanpin_timing, nanpin_lot, ma_term);
+                    displaySimResult(ac, "Opt select sim");
+                }
             }
         }
     }

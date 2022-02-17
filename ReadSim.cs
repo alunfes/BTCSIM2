@@ -278,7 +278,7 @@ namespace BTCSIM2
         }
 
 
-        private List<int> generateBestPlIndList(int num_select)
+        public List<int> generateBestPlIndList(int num_select)
         {
             var pl = new Dictionary<int, double>();
             var n = 0;
