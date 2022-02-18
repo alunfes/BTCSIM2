@@ -218,8 +218,7 @@ namespace BTCSIM2
                 Parallel.For(0, para_pt.Count, i =>
                 {
                     var sim = new Sim();
-                    var ac = new Account(lev_or_fixed, true);
-                    ac_list[i] = para_strategy[i] == 0 ? sim.sim_madiv_nanpin_ptlc(from, to, ac,
+                    ac_list[i] = para_strategy[i] == 0 ? sim.sim_madiv_nanpin_ptlc(from, to, new Account(lev_or_fixed, true),
                             para_pt[i],
                             para_lc[i],
                             para_nanpin_timing[i].ToList(),
@@ -227,7 +226,7 @@ namespace BTCSIM2
                             para_ma_term[i],
                             true
                             ) :
-                            sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac,
+                            sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_or_fixed, true),
                             para_pt[i],
                             para_lc[i],
                             para_nanpin_timing[i].ToList(),

@@ -67,8 +67,9 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            var to = 2000;
-            //var to = MarketData.Close.Count - 1;
+            //var from = MarketData.Close.Count - 100000;
+            //var to = 2000;
+            var to = MarketData.Close.Count - 1;
             //var leveraged_or_fixed_trading = "leveraged";
             var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 1000;
@@ -274,24 +275,24 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0068,0.0136,0.0205,0.0273,0.0341,0.041,0.0478,0.0546,0.0614,0.0682,0.0751 };
-                var lot_splits = new List<double>() { 0.318844,0.218536,0.149785,0.102663,0.070365,0.048228,0.033056,0.022656,0.015529,0.010643,0.007295,0.005 };
-                var pt_ratio = 0.036;
-                var lc_ratio = 0.082;
-                var ma_term = 7;    
+                var nanpin_timing = new List<double>() { 0.0188,0.0376,0.0563,0.0751 };
+                var lot_splits = new List<double>() { 0.226828,0.212584,0.199236,0.186725,0.175 };
+                var pt_ratio = 0.047;
+                var lc_ratio = 0.094;
+                var ma_term = 240;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
-                //ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, contrarian);
-                ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term);
+                ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, contrarian);
+                //ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term);
                 displaySimResult(ac, "MA Div nanpin");
             }
             else if( key == "read sim")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
-                var read_sim_from = MarketData.Close.Count - 300000;
-                var read_sim_to = MarketData.Close.Count-1;
-                var num_best_pl_for_test = 10;
+                var read_sim_from = MarketData.Close.Count - 200000;
+                var read_sim_to = MarketData.Close.Count-100000;
+                var num_best_pl_for_test = 100;
                 var rsim = new ReadSim();
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 
