@@ -67,8 +67,8 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            //var to = 500000;
-            var to = MarketData.Close.Count - 1;
+            var to = 2000;
+            //var to = MarketData.Close.Count - 1;
             //var leveraged_or_fixed_trading = "leveraged";
             var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 1000;
@@ -278,7 +278,7 @@ namespace BTCSIM2
                 var lot_splits = new List<double>() { 0.318844,0.218536,0.149785,0.102663,0.070365,0.048228,0.033056,0.022656,0.015529,0.010643,0.007295,0.005 };
                 var pt_ratio = 0.036;
                 var lc_ratio = 0.082;
-                var ma_term = 150;    
+                var ma_term = 7;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
@@ -330,6 +330,7 @@ namespace BTCSIM2
                         nanpin_timing = ele[15].Split(':').Select(double.Parse).ToList();
                         nanpin_lot = ele[16].Split(':').Select(double.Parse).ToList();
                         strategy = Convert.ToInt32(ele[14]);
+                        Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
 
                     }
                     var ac = new Account(leveraged_or_fixed_trading, false);

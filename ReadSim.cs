@@ -27,6 +27,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> res_total_capital_gradient { get; set; }
         public ConcurrentDictionary<int, List<double>> res_total_capital_list { get; set; }
         public ConcurrentDictionary<int, List<int>> res_num_trade_list { get; set; }
+        public ConcurrentDictionary<int, string> res_write_contents { get; set; }
 
         public ConcurrentDictionary<int, double> opt_total_pl { get; set; }
         public ConcurrentDictionary<int, double> opt_realized_pl { get; set; }
@@ -68,6 +69,7 @@ namespace BTCSIM2
             res_num_trade_list = new ConcurrentDictionary<int, List<int>>();
             res_sharp_ratio = new ConcurrentDictionary<int, double>();
             res_total_capital_gradient = new ConcurrentDictionary<int, double>();
+            res_write_contents = new ConcurrentDictionary<int, string>();
 
             para_pt = new ConcurrentDictionary<int, double>();
             para_lc = new ConcurrentDictionary<int, double>();
@@ -254,7 +256,7 @@ namespace BTCSIM2
                     res_sharp_ratio[i] = ac_list[i].performance_data.sharp_ratio;
                     res_total_capital_gradient[i] = ac_list[i].performance_data.total_capital_gradient;
 
-                    var res = no.ToString() + "," + para_pt[i].ToString() + "," +
+                    res_write_contents[i] = i.ToString() + "," + para_pt[i].ToString() + "," +
                     para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+
                     string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
@@ -266,12 +268,13 @@ namespace BTCSIM2
                     res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +
                     res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString();
                     progress = Math.Round(100.0 * Convert.ToDouble(no) / Convert.ToDouble(para_lc.Count), 2);
-                    sw.WriteLine(res);
+                    sw.WriteLine(res_write_contents[i]);
                     Console.WriteLine(no.ToString() + "/" + para_lc.Count.ToString() + " - " + progress.ToString() + "%" +
                         ": test total pl=" + res_total_pl[i].ToString()+
                         ", test sharp ratio="+res_sharp_ratio[i].ToString()+
                         ", test win rate="+res_win_rate[i].ToString());
                     ac_list.TryRemove(i, out var d);
+                    res_win_rate.TryRemove(i, out var dd);
                     no++;
                 });
             }

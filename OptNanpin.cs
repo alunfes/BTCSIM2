@@ -25,6 +25,8 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> res_ave_sell_pl { get; set; }
         public ConcurrentDictionary<int, double> res_realized_pl_variance { get; set; }
         public ConcurrentDictionary<int, double> res_total_capital_variance { get; set; }
+        public ConcurrentDictionary<int, string> res_write_contents { get; set; }
+
 
         public ConcurrentDictionary<int, double> para_pt { get; set; }
         public ConcurrentDictionary<int, double> para_lc { get; set; }
@@ -49,6 +51,7 @@ namespace BTCSIM2
             res_ave_sell_pl = new ConcurrentDictionary<int, double>();
             res_realized_pl_variance = new ConcurrentDictionary<int, double>();
             res_total_capital_variance = new ConcurrentDictionary<int, double>();
+            res_write_contents = new ConcurrentDictionary<int, string>();
             para_pt = new ConcurrentDictionary<int, double>();
             para_lc = new ConcurrentDictionary<int, double>();
             para_num_split = new ConcurrentDictionary<int, int>();
@@ -104,11 +107,17 @@ namespace BTCSIM2
                         res_num_trade[i] = ac_list[i].performance_data.num_trade;
                         res_num_buy[i] = ac_list[i].performance_data.num_buy;
                         res_num_sell[i] = ac_list[i].performance_data.num_sell;
-                        res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
-                        res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                        if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
+                            res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
+                        else
+                            res_ave_buy_pl[i] = 0;
+                        if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
+                            res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                        else
+                            res_ave_sell_pl[i] = 0;
                         res_realized_pl_variance[i] = ac_list[i].performance_data.realized_pl_ratio_variance;
                         res_total_capital_variance[i] = ac_list[i].performance_data.total_capital_variance;
-                        var res = n.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
+                        res_write_contents[i] = i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
                         ac_list[i].performance_data.win_rate.ToString() + "," +
                         ac_list[i].performance_data.total_pl.ToString() + "," +
                         ac_list[i].performance_data.realized_pl.ToString() + "," +
@@ -124,7 +133,7 @@ namespace BTCSIM2
                         opt_para_gen.para_strategy[i].ToString() +","+
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]);
-                        sw.WriteLine(res);
+                        sw.WriteLine(res_write_contents[i]);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
                         Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
@@ -132,6 +141,7 @@ namespace BTCSIM2
                             ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
                             ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
                         ac_list.TryRemove(i, out var d);
+                        res_write_contents.TryRemove(i, out var dd);
                     });
                 }
                 else
