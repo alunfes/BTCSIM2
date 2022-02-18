@@ -215,10 +215,11 @@ namespace BTCSIM2
                 var progress = 0.0;
                 var no = 0;
                 var ac_list = new ConcurrentDictionary<int, Account>();
+                var sim_list = new ConcurrentDictionary<int, Sim>();
                 Parallel.For(0, para_pt.Count, i =>
                 {
-                    var sim = new Sim();
-                    ac_list[i] = para_strategy[i] == 0 ? sim.sim_madiv_nanpin_ptlc(from, to, new Account(lev_or_fixed, true),
+                    sim_list[i] = new Sim();
+                    ac_list[i] = para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_or_fixed, true),
                             para_pt[i],
                             para_lc[i],
                             para_nanpin_timing[i].ToList(),
@@ -226,7 +227,7 @@ namespace BTCSIM2
                             para_ma_term[i],
                             true
                             ) :
-                            sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_or_fixed, true),
+                            sim_list[i].sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_or_fixed, true),
                             para_pt[i],
                             para_lc[i],
                             para_nanpin_timing[i].ToList(),
@@ -273,6 +274,7 @@ namespace BTCSIM2
                         ", test sharp ratio="+res_sharp_ratio[i].ToString()+
                         ", test win rate="+res_win_rate[i].ToString());
                     ac_list.TryRemove(i, out var d);
+                    sim_list.TryRemove(i, out var s);
                     res_win_rate.TryRemove(i, out var dd);
                     no++;
                 });

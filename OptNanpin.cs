@@ -82,18 +82,19 @@ namespace BTCSIM2
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
+                    var sim_list = new ConcurrentDictionary<int, Sim>();
                     Parallel.For(0, num_opt_calc, i =>
                     {
-                        var sim = new Sim();
-                        ac_list[i] = opt_para_gen.para_strategy[i] == 0 ? sim.sim_madiv_nanpin_ptlc(from, to, new Account(lev_fixed_trading, true),
+                        sim_list[i] = new Sim();
+                        ac_list[i] = opt_para_gen.para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_fixed_trading, true),
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i].ToList(),
                             opt_para_gen.para_nanpin_lot[i].ToList(),
                             opt_para_gen.para_ma_term[i],
                             false
-                            ) : 
-                            sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_fixed_trading, true),
+                            ) :
+                            sim_list[i].sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_fixed_trading, true),
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i].ToList(),
@@ -140,6 +141,7 @@ namespace BTCSIM2
                             ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
                             ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
                         ac_list.TryRemove(i, out var d);
+                        sim_list.TryRemove(i, out var s);
                         res_write_contents.TryRemove(i, out var dd);
                     });
                 }
