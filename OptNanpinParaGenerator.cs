@@ -118,7 +118,6 @@ namespace BTCSIM2
         {
             var lc = new List<double>();
             var res = new ConcurrentDictionary<int, double>();
-            var v = 0.0;
             var n = 0;
             while (true)
             {

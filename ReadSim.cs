@@ -21,8 +21,8 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> res_ave_buy_pl { get; set; }
         public ConcurrentDictionary<int, double> res_ave_sell_pl { get; set; }
         public ConcurrentDictionary<int, double> res_realized_pl { get; set; }
-        public ConcurrentDictionary<int, double> res_realized_pl_var { get; set; }
-        public ConcurrentDictionary<int, double> res_total_capital_var { get; set; }
+        public ConcurrentDictionary<int, double> res_realized_pl_sd { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital_sd { get; set; }
         public ConcurrentDictionary<int, double> res_sharp_ratio { get; set; }
         public ConcurrentDictionary<int, double> res_total_capital_gradient { get; set; }
         public ConcurrentDictionary<int, List<double>> res_total_capital_list { get; set; }
@@ -33,8 +33,8 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> opt_realized_pl { get; set; }
         public ConcurrentDictionary<int, double> opt_win_rate { get; set; }
         public ConcurrentDictionary<int, double> opt_num_trade { get; set; }
-        public ConcurrentDictionary<int, double> opt_realized_pl_var { get; set; }
-        public ConcurrentDictionary<int, double> opt_total_capital_var { get; set; }
+        public ConcurrentDictionary<int, double> opt_realized_pl_sd { get; set; }
+        public ConcurrentDictionary<int, double> opt_total_capital_sd { get; set; }
         public ConcurrentDictionary<int, double> opt_sharp_ratio { get; set; }
         public ConcurrentDictionary<int, double> opt_total_capital_gradient { get; set; }
 
@@ -63,8 +63,8 @@ namespace BTCSIM2
             res_ave_buy_pl = new ConcurrentDictionary<int, double>();
             res_ave_sell_pl = new ConcurrentDictionary<int, double>();
             res_realized_pl = new ConcurrentDictionary<int, double>();
-            res_realized_pl_var = new ConcurrentDictionary<int, double>();
-            res_total_capital_var = new ConcurrentDictionary<int, double>();
+            res_realized_pl_sd = new ConcurrentDictionary<int, double>();
+            res_total_capital_sd = new ConcurrentDictionary<int, double>();
             res_total_capital_list = new ConcurrentDictionary<int, List<double>>();
             res_num_trade_list = new ConcurrentDictionary<int, List<int>>();
             res_sharp_ratio = new ConcurrentDictionary<int, double>();
@@ -83,8 +83,8 @@ namespace BTCSIM2
             opt_realized_pl = new ConcurrentDictionary<int, double>();
             opt_win_rate = new ConcurrentDictionary<int, double>();
             opt_num_trade = new ConcurrentDictionary<int, double>();
-            opt_realized_pl_var = new ConcurrentDictionary<int, double>();
-            opt_total_capital_var = new ConcurrentDictionary<int, double>();
+            opt_realized_pl_sd = new ConcurrentDictionary<int, double>();
+            opt_total_capital_sd = new ConcurrentDictionary<int, double>();
             opt_sharp_ratio = new ConcurrentDictionary<int, double>();
             opt_total_capital_gradient = new ConcurrentDictionary<int, double>();            
         }
@@ -95,11 +95,12 @@ namespace BTCSIM2
          */
         public void startMultiReadSim(int from, int to, int inscope_for_sim, string lev_or_fixed)
         {
+            /*
             initialize();
             var opt_realized_pl = new Dictionary<int, double>();
             var n = 0;
             var selected_inds = generateBestPlIndList(inscope_for_sim);
-            /*
+            
             //read only for top inscope_for_sim
             n = 0;
             int m = 0;
@@ -189,8 +190,8 @@ namespace BTCSIM2
                         opt_win_rate[target_no] = Convert.ToDouble(ele[2]);
                         opt_total_pl[target_no] = Convert.ToDouble(ele[3]);
                         opt_realized_pl[target_no] = Convert.ToDouble(ele[4]);
-                        opt_realized_pl_var[target_no] = Convert.ToDouble(ele[5]);
-                        opt_total_capital_var[target_no] = Convert.ToDouble(ele[6]);
+                        opt_realized_pl_sd[target_no] = Convert.ToDouble(ele[5]);
+                        opt_total_capital_sd[target_no] = Convert.ToDouble(ele[6]);
                         opt_sharp_ratio[target_no] = Convert.ToDouble(ele[7]);
                         opt_total_capital_gradient[target_no] = Convert.ToDouble(ele[8]);
                         para_pt[target_no] = Convert.ToDouble(ele[9]);
@@ -209,8 +210,8 @@ namespace BTCSIM2
             using (StreamWriter writer = new StreamWriter("read sim.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
             {
-                sw.WriteLine("No,pt,lc,ma term,strategy id,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl var,opt total capital var,opt num trade,opt win rate," +
-                    "opt sharp ratio,opt total capital gradient,test total pl,test realized pl,test realized pl var,test total capital var,test num trade,test win rate," +
+                sw.WriteLine("No,pt,lc,ma term,strategy id,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl sd,opt total capital sd,opt num trade,opt win rate," +
+                    "opt sharp ratio,opt total capital gradient,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
                     "test sharp ratio,test total capital gradient");
                 var progress = 0.0;
                 var no = 0;
@@ -251,8 +252,8 @@ namespace BTCSIM2
                     else
                         res_ave_sell_pl[i] = 0;
                     res_realized_pl[i] = ac_list[i].performance_data.realized_pl;
-                    res_realized_pl_var[i] = ac_list[i].performance_data.realized_pl_ratio_variance;
-                    res_total_capital_var[i] = ac_list[i].performance_data.total_capital_variance;
+                    res_realized_pl_sd[i] = ac_list[i].performance_data.realized_pl_ratio_sd;
+                    res_total_capital_sd[i] = ac_list[i].performance_data.total_capital_sd;
                     res_sharp_ratio[i] = ac_list[i].performance_data.sharp_ratio;
                     res_total_capital_gradient[i] = ac_list[i].performance_data.total_capital_gradient;
 
@@ -260,11 +261,11 @@ namespace BTCSIM2
                     para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+
                     string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
-                    opt_realized_pl_var[i].ToString() + "," + opt_total_capital_var[i].ToString() + "," +
+                    opt_realized_pl_sd[i].ToString() + "," + opt_total_capital_sd[i].ToString() + "," +
                     opt_num_trade[i].ToString() + "," + opt_win_rate[i].ToString() + "," +
                     opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," +
                     res_total_pl[i].ToString() + "," + res_realized_pl[i].ToString() + "," +
-                    res_realized_pl_var[i].ToString() + "," + res_total_capital_var[i].ToString() + "," +
+                    res_realized_pl_sd[i].ToString() + "," + res_total_capital_sd[i].ToString() + "," +
                     res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +
                     res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString();
                     progress = Math.Round(100.0 * Convert.ToDouble(no) / Convert.ToDouble(para_lc.Count), 2);

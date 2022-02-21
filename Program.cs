@@ -20,6 +20,8 @@ namespace BTCSIM2
             Console.WriteLine("num trade=" + ac.performance_data.num_trade);
             Console.WriteLine("num market order=" + ac.performance_data.num_maker_order);
             Console.WriteLine("win rate=" + ac.performance_data.win_rate);
+            Console.WriteLine("daily ave return=" + ac.performance_data.ave_daily_pl);
+            Console.WriteLine("daily ave sd=" + ac.performance_data.daily_pl_sd);
             Console.WriteLine("sharp_ratio=" + ac.performance_data.sharp_ratio);
             Console.WriteLine("num_buy=" + ac.performance_data.num_buy);
             Console.WriteLine("num_sell=" + ac.performance_data.num_sell);
@@ -29,10 +31,11 @@ namespace BTCSIM2
             Console.WriteLine("max_pl=" + ac.performance_data.max_pl);
             Console.WriteLine("ave_holding_period=" + ac.holding_data.holding_period_list.Average());
             Console.WriteLine("total_capital_gradient=" + ac.performance_data.total_capital_gradient);
-            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient" };
-            var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
-            Math.Round(ac.performance_data.max_pl,4).ToString(), Math.Round(ac.performance_data.buy_pl_list.Sum() / Convert.ToDouble(ac.performance_data.buy_pl_list.Count), 4).ToString(),
-                Math.Round(ac.performance_data.sell_pl_list.Sum() / Convert.ToDouble(ac.performance_data.sell_pl_list.Count), 4).ToString(), Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString(),
+            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient" };
+            var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(),
+                ac.performance_data.ave_daily_pl.ToString(), ac.performance_data.daily_pl_sd.ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
+            Math.Round(ac.performance_data.max_pl,4).ToString(), Math.Round(ac.performance_data.buy_pl_list.Average(), 4).ToString(),
+                Math.Round(ac.performance_data.sell_pl_list.Average(), 4).ToString(), Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString(),
                 ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString()};
             LineChart.DisplayLineChart3(ac.performance_data.total_capital_list, ac.performance_data.log_close, ac.performance_data.num_trade_list, table_labels, table_data, title + ": from=" + ac.start_ind.ToString() + ", to=" + ac.end_ind.ToString());
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
@@ -75,7 +78,7 @@ namespace BTCSIM2
             var to = MarketData.Close.Count - 1;
             //var leveraged_or_fixed_trading = "leveraged";
             var leveraged_or_fixed_trading = "fixed";
-            var num_opt_calc = 1000;
+            var num_opt_calc = 10000;
 
 
             /*
@@ -162,11 +165,16 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
-                using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
-                using (var sw = TextWriter.Synchronized(writer))
+                var d = new List<int>();
+                Parallel.For(0, 10000, i =>
                 {
-
-                }
+                    if (d.Contains(i))
+                        Console.WriteLine(i);
+                    else
+                        Console.WriteLine(i);
+                    Thread.Sleep(100);
+                    d.Add(i);
+                });
             }
             if (key == "ptlc")
             {

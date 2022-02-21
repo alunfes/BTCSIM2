@@ -23,8 +23,8 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, int> res_num_sell { get; set; }
         public ConcurrentDictionary<int, double> res_ave_buy_pl { get; set; }
         public ConcurrentDictionary<int, double> res_ave_sell_pl { get; set; }
-        public ConcurrentDictionary<int, double> res_realized_pl_variance { get; set; }
-        public ConcurrentDictionary<int, double> res_total_capital_variance { get; set; }
+        public ConcurrentDictionary<int, double> res_realized_pl_sd { get; set; }
+        public ConcurrentDictionary<int, double> res_total_capital_sd { get; set; }
         public ConcurrentDictionary<int, string> res_write_contents { get; set; }
 
 
@@ -49,8 +49,8 @@ namespace BTCSIM2
             res_num_sell = new ConcurrentDictionary<int, int>();
             res_ave_buy_pl = new ConcurrentDictionary<int, double>();
             res_ave_sell_pl = new ConcurrentDictionary<int, double>();
-            res_realized_pl_variance = new ConcurrentDictionary<int, double>();
-            res_total_capital_variance = new ConcurrentDictionary<int, double>();
+            res_realized_pl_sd = new ConcurrentDictionary<int, double>();
+            res_total_capital_sd = new ConcurrentDictionary<int, double>();
             res_write_contents = new ConcurrentDictionary<int, string>();
             para_pt = new ConcurrentDictionary<int, double>();
             para_lc = new ConcurrentDictionary<int, double>();
@@ -75,10 +75,12 @@ namespace BTCSIM2
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
+            using (StreamWriter twriter = new StreamWriter("test.csv", false))
+            using (var swt = TextWriter.Synchronized(twriter))
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits");
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
@@ -101,6 +103,7 @@ namespace BTCSIM2
                             opt_para_gen.para_nanpin_lot[i].ToList(),
                             opt_para_gen.para_ma_term[i]
                             );
+                        swt.WriteLine(i.ToString()+","+ac_list[i].performance_data.total_pl.ToString()+","+opt_para_gen.para_pt[i].ToString()+","+opt_para_gen.para_lc[i].ToString());
                         res_total_capital[i] = ac_list[i].performance_data.total_capital;
                         res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
                         res_win_rate[i] = ac_list[i].performance_data.win_rate;
@@ -115,14 +118,14 @@ namespace BTCSIM2
                             res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
                         else
                             res_ave_sell_pl[i] = 0;
-                        res_realized_pl_variance[i] = ac_list[i].performance_data.realized_pl_ratio_variance;
-                        res_total_capital_variance[i] = ac_list[i].performance_data.total_capital_variance;
+                        res_realized_pl_sd[i] = ac_list[i].performance_data.realized_pl_ratio_sd;
+                        res_total_capital_sd[i] = ac_list[i].performance_data.total_capital_sd;
                         res_write_contents[i] = i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
                         ac_list[i].performance_data.win_rate.ToString() + "," +
                         ac_list[i].performance_data.total_pl.ToString() + "," +
                         ac_list[i].performance_data.realized_pl.ToString() + "," +
-                        ac_list[i].performance_data.realized_pl_ratio_variance.ToString() + "," +
-                        ac_list[i].performance_data.total_capital_variance.ToString() + "," +
+                        ac_list[i].performance_data.realized_pl_ratio_sd.ToString() + "," +
+                        ac_list[i].performance_data.total_capital_sd.ToString() + "," +
                         ac_list[i].performance_data.sharp_ratio.ToString() + "," +
                         ac_list[i].performance_data.total_capital_gradient.ToString() + "," +
                         opt_para_gen.para_pt[i].ToString() + "," +

@@ -18,7 +18,7 @@ namespace BTCSIM2
         public List<double> total_pl_list { get; set; }
         public List<double> realized_pl_list { get; set; }
         public List<double> total_capital_list { get; set; }
-        public double total_capital_variance { get; set; }
+        public double total_capital_sd { get; set; }
         public List<double> buy_pl_list { get; set; }
         public List<double> sell_pl_list { get; set; }
         public double unrealized_pl { get; set; }
@@ -26,7 +26,7 @@ namespace BTCSIM2
         public double unrealized_pl_ratio { get; set; }
         public List<double> unrealized_pl_ratio_list { get; set; }
         public double total_pl_ratio { get; set; }
-        public double realized_pl_ratio_variance { get; set; }
+        public double realized_pl_ratio_sd { get; set; }
         public List<double> buy_pl_ratio_list { get; set; }
         public List<double> sell_pl_ratio_list { get; set; }
         public double max_dd { get; set; }
@@ -45,20 +45,20 @@ namespace BTCSIM2
         public double total_fee { get; set; }
         public double sharp_ratio { get; set; }
         public double ave_daily_pl { get; set; }
-        public double daily_pl_var { get; set; }
+        public double daily_pl_sd { get; set; }
 
         public PerformanceData(double initial_cap)
         {
             total_pl = 0.0;
             total_pl_ratio = 0.0;
-            realized_pl_ratio_variance = 0.0;
+            realized_pl_ratio_sd = 0.0;
             total_capital = initial_cap;
             initial_capital = initial_cap;
             realized_pl = 0.0;
             total_pl_list = new List<double>();
             realized_pl_list = new List<double>();
             total_capital_list = new List<double>();
-            total_capital_variance = 0.0;
+            total_capital_sd = 0.0;
             buy_pl_list = new List<double>();
             sell_pl_list = new List<double>();
             buy_pl_ratio_list = new List<double>();
@@ -81,6 +81,8 @@ namespace BTCSIM2
             max_pl = 0.0;
             num_force_exit = 0;
             total_capital_gradient = 0.0;
+            ave_daily_pl = 0.0;
+            daily_pl_sd = 0.0;
         }
     }
 
@@ -373,13 +375,28 @@ namespace BTCSIM2
                     change.Add( (performance_data.total_capital_list[i] - performance_data.total_capital_list[i-1]) / performance_data.total_capital_list[i - 1]);
                 else
                     change.Add(-1.0 * (performance_data.total_capital_list[i] - performance_data.total_capital_list[i - 1]) / performance_data.total_capital_list[i - 1]);
-            var mean = change.Average();
-            var stdv = 0.0;
-            for (int i = 0; i < change.Count; i++)
-                stdv += Math.Pow(change[i] - mean, 2.0);
-            stdv = Math.Sqrt(stdv / Convert.ToDouble(change.Count - 1));
-            /*
-            var doubleList = change.Select(a => Convert.ToDouble(a)).ToArray();
+            var variance = calcVariance(change);
+            var stdv = Math.Sqrt(variance);
+            if (stdv != 0)
+                performance_data.sharp_ratio = Math.Round(((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital) / stdv, 6);
+            else
+                performance_data.sharp_ratio = 0;
+        }
+
+
+        public void calcDailyReturn()
+        {
+            var days = (performance_data.total_capital_list.Count-1) / 1440.0;
+            performance_data.ave_daily_pl = Math.Round(((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital) / days, 6);
+            var change = new List<double>();
+            for (int i = 0; i < performance_data.total_capital_list.Count-1; i++)
+                change.Add((performance_data.total_capital_list[i + 1] - performance_data.total_capital_list[i]) / performance_data.total_capital_list[i]);
+            performance_data.daily_pl_sd = Math.Round(Math.Sqrt(calcVariance(change)), 6);
+        }
+
+        private double calcVariance(List<double> data)
+        {
+            var doubleList = data.Select(a => Convert.ToDouble(a)).ToArray();
             //平均値算出
             double mean = doubleList.Average();
             //自乗和算出
@@ -387,12 +404,7 @@ namespace BTCSIM2
             //分散 = 自乗和 / 要素数 - 平均値^2
             double variance = sum2 / Convert.ToDouble(doubleList.Length) - mean * mean;
             //標準偏差 = 分散の平方根
-            var stdv = Math.Sqrt(variance);
-            */
-            if (stdv != 0)
-                performance_data.sharp_ratio = Math.Round(((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital) / stdv, 6);
-            else
-                performance_data.sharp_ratio = 0;
+            return variance;
         }
 
 
@@ -404,6 +416,27 @@ namespace BTCSIM2
                 grad += performance_data.total_capital_list[i + 1] - performance_data.total_capital_list[i];
             performance_data.total_capital_gradient = Math.Round(grad / Convert.ToDouble(performance_data.total_capital_list.Count-1), 4);
         }
+
+        private void calcMaxDD()
+        {
+            /*
+            var mincap = performance_data.total_capital_list.Min();
+            var minind = performance_data.total_capital_list.IndexOf(mincap);
+            var premax = performance_data.total_capital_list.GetRange(0, minind + 1).Max();
+            performance_data.max_dd = Math.Round((premax - mincap) / premax, 6);
+            */
+            var current_max = 0.0;
+            var current_dd = 99999.0;
+            for(int i=0; i<performance_data.total_capital_list.Count; i++)
+            {
+                if (current_max < performance_data.total_capital_list[i])
+                    current_max = performance_data.total_capital_list[i];
+                if (current_dd > (performance_data.total_capital_list[i] - current_max) / current_max)
+                    current_dd = (performance_data.total_capital_list[i] - current_max)/current_max;
+            }
+            performance_data.max_dd = current_dd;
+        }
+
 
 
 
@@ -523,22 +556,11 @@ namespace BTCSIM2
             }
             calc_performance_data(close);
             calc_margin_data(i, close);
-            performance_data.max_dd = Math.Round(performance_data.unrealized_pl_ratio_list.Min(), 6);
+            calcDailyReturn();
+            calcMaxDD();
             performance_data.max_pl = Math.Round(performance_data.unrealized_pl_ratio_list.Max(), 6);
-            performance_data.realized_pl_ratio_variance = calcStdiv(performance_data.realized_pl_list);
-            performance_data.total_capital_variance = calcStdiv(performance_data.total_capital_list);
-            double calcStdiv(List<double> data)
-            {
-                if (data.Count > 0)
-                {
-                    var mean = data.Average();
-                    double sum2 = data.Select(a => a * a).Sum();
-                    double variance = sum2 / data.Count - mean * mean;
-                    return Math.Sqrt(variance);
-                }
-                else
-                    return 0;
-            }
+            performance_data.realized_pl_ratio_sd = Math.Sqrt(calcVariance(performance_data.realized_pl_list));
+            performance_data.total_capital_sd = Math.Sqrt(calcVariance(performance_data.total_capital_list));
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
             calc_sharp_ratio();
