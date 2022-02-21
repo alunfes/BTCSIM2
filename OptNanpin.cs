@@ -157,7 +157,7 @@ namespace BTCSIM2
         private void checkNumNanpin(string contents)
         {
             var ele = contents.Split(',');
-            if (ele[16].Split(':').Length + 1 != ele[17].Split(':').Length)
+            if (ele[15].Split(':').Length + 1 != ele[16].Split(':').Length)
                 Console.WriteLine("checkNumNanpin: nanpin log / timing is not matched !");
         }
         

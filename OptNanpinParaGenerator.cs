@@ -46,7 +46,7 @@ namespace BTCSIM2
             var pt = generatePtList(min_pt, max_pt);
             var lc = generateLcList(min_lc, max_lc);
             var num_split = generateNumSplit(max_split);
-            var ma_term = new List<int>(MarketData.terms);
+            var ma_term = generateMATerm(MarketData.terms);
             var min_lot = generateMinLot();
             var strategy = generateStrategy();
             var para_ind_combination = generateParamIndCombination(num_select_params, pt, lc, num_split, func, ma_term, min_lot, strategy); //generate combination of all parameters
@@ -95,10 +95,10 @@ namespace BTCSIM2
             });
         }
 
-        private List<double> generatePtList(double min_pt, double max_pt)
+        private ConcurrentDictionary<int,double> generatePtList(double min_pt, double max_pt)
         {
+            var res = new ConcurrentDictionary<int, double>();
             var pt = new List<double>();
-            var v = 0.0;
             var n = 0;
             while (true)
             {
@@ -106,15 +106,18 @@ namespace BTCSIM2
                 n++;
                 if (pt.Last() > max_pt)
                 {
-                    pt.RemoveAt(pt.Count - 1);
+                    pt.Add(min_pt + (n * 0.001));
                     break;
                 }
             }
-            return pt;
+            for (int i = 0; i < pt.Count; i++)
+                res[i] = pt[i];
+            return res;
         }
-        private List<double> generateLcList(double min_lc, double max_lc)
+        private ConcurrentDictionary<int, double> generateLcList(double min_lc, double max_lc)
         {
             var lc = new List<double>();
+            var res = new ConcurrentDictionary<int, double>();
             var v = 0.0;
             var n = 0;
             while (true)
@@ -127,32 +130,46 @@ namespace BTCSIM2
                     break;
                 }
             }
-            return lc;
+            for (int i = 0; i < lc.Count; i++)
+                res[i] = lc[i];
+            return res;
         }
-        private List<int> generateNumSplit(int max_split)
+        private ConcurrentDictionary<int, int> generateNumSplit(int max_split)
         {
-            var res = new List<int>();
+            var res = new ConcurrentDictionary<int, int>();
             for(int i=1; i<max_split; i++)
             {
-                res.Add(i+1);
+                res[i-1] = i+1;
             }
             return res;
         }
-        private List<double> generateMinLot() //minlot=0.001, maxlot=0.2, total lot is always 1.0
+        private ConcurrentDictionary<int, double> generateMinLot() //minlot=0.001, maxlot=0.2, total lot is always 1.0
         {
-            var res = new List<double>() {0.001};
+            var res = new ConcurrentDictionary<int, double>();
+            res[0] = 0.001;
             for (int i = 0; i < 40; i++)
-                res.Add((i + 1) * 0.005);
+                res[i+1]= (i + 1) * 0.005;
             return res;
         }
-        private List<int> generateStrategy()
+        private ConcurrentDictionary<int, int> generateMATerm(List<int> ma_term)
         {
-            return new List<int> {0,1 }; //normal or rapid side change
+            var res = new ConcurrentDictionary<int, int>();
+            for (int i = 0; i < ma_term.Count; i++)
+                res[i] = ma_term[i];
+            return res;
+        }
+        private ConcurrentDictionary<int, int> generateStrategy()
+        {
+            var res = new ConcurrentDictionary<int, int>();
+            res[0] = 0;
+            res[1] = 1;
+            return res;
         }
 
 
         //各パラメータのランダムな組み合わせを生成する。
-        private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num_select, List<double> pt, List<double> lc, List<int> num_split, List<int> funcs, List<int> ma_term, List<double> min_lot, List<int> strategy)
+        private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num_select, ConcurrentDictionary<int, double> pt, ConcurrentDictionary<int, double> lc,
+            ConcurrentDictionary<int, int> num_split, List<int> funcs, ConcurrentDictionary<int, int> ma_term, ConcurrentDictionary<int, double> min_lot, ConcurrentDictionary<int, int> strategy)
         {
             var res = new ConcurrentDictionary<string, List<int>>();
             var ran = new Random();

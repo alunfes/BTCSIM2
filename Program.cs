@@ -162,7 +162,11 @@ namespace BTCSIM2
             if (key == "test")
             {
                 Console.WriteLine("test");
+                using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
+                using (var sw = TextWriter.Synchronized(writer))
+                {
 
+                }
             }
             if (key == "ptlc")
             {

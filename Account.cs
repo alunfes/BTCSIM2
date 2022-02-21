@@ -44,6 +44,8 @@ namespace BTCSIM2
         public double win_rate { get; set; }
         public double total_fee { get; set; }
         public double sharp_ratio { get; set; }
+        public double ave_daily_pl { get; set; }
+        public double daily_pl_var { get; set; }
 
         public PerformanceData(double initial_cap)
         {
