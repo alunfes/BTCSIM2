@@ -153,6 +153,9 @@ namespace BTCSIM2
         }
 
 
+        //private checkNumNanpin(int i, )
+        
+
 
         Dictionary<string, List<double[]>> getNanpinParam(double pt, double lc, int num_splits, int select_func_no)
         {

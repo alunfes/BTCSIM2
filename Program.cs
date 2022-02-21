@@ -174,9 +174,14 @@ namespace BTCSIM2
                 Parallel.For(0, 1000000, i =>
                 {
                     var r = ran.Next(5);
-                    Thread.Sleep(r);
-                    var res = testfunc(i, a[r], a[r], a[r]);
-                    if (res != 0)
+                    var res = a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString()+","+
+                     a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString();
+                    var ele = res.Split(',');
+                    var summ = 0;
+                    var s = Convert.ToInt32(ele[0]);
+                    foreach (var d in ele)
+                        summ += Convert.ToInt32(d);
+                    if (summ != s * 12)
                     {
                         Console.WriteLine("fuseigo");
                     }

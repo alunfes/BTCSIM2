@@ -80,20 +80,19 @@ namespace BTCSIM2
                 para_strategy[i] = strategy[para_ind_combination[random_params_ind[i]][6]];
             });
             checkNanpingNums();
-            Console.WriteLine("Completed OptNanpinParaGenerator")
+            Console.WriteLine("Completed OptNanpinParaGenerator");
         }
 
         private void checkNanpingNums()
         {
             var keys = para_nanpin_timing.Keys.ToList();
-            for (int i=0; i<keys.Count; i++)
+            Parallel.For(0, keys.Count, i =>
             {
-                var a = para_nanpin_timing[keys[i]].Length;
-                if (para_nanpin_timing[keys[i]].Length+1 != para_nanpin_lot[keys[i]].Length)
+                if (para_nanpin_timing[keys[i]].Length + 1 != para_nanpin_lot[keys[i]].Length)
                 {
                     Console.WriteLine("OptNanpinParaGenerator.checkNanpingNums: # of nanpin lot and timing are not matched !");
                 }
-            }
+            });
         }
 
         private List<double> generatePtList(double min_pt, double max_pt)
