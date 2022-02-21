@@ -134,6 +134,7 @@ namespace BTCSIM2
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]);
                         sw.WriteLine(res_write_contents[i]);
+                        checkNumNanpin(res_write_contents[i]);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
                         Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
@@ -153,7 +154,12 @@ namespace BTCSIM2
         }
 
 
-        //private checkNumNanpin(int i, )
+        private void checkNumNanpin(string contents)
+        {
+            var ele = contents.Split(',');
+            if (ele[16].Split(':').Length + 1 != ele[17].Split(':').Length)
+                Console.WriteLine("checkNumNanpin: nanpin log / timing is not matched !");
+        }
         
 
 

@@ -43,11 +43,6 @@ namespace BTCSIM2
         static void Main(string[] args)
         {
 
-            double testfunc(int i, int a, int b, int c)
-            {
-                return i * (a - b) * c;
-            }
-
             var key = "";
             while (true)
             {
@@ -74,8 +69,8 @@ namespace BTCSIM2
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
-            //var from = 1000;
-            var from = MarketData.Close.Count - 100000;
+            var from = 1000;
+            //var from = MarketData.Close.Count - 100000;
             //var to = 2000;
             var to = MarketData.Close.Count - 1;
             //var leveraged_or_fixed_trading = "leveraged";
@@ -168,24 +163,6 @@ namespace BTCSIM2
             {
                 Console.WriteLine("test");
 
-                var a = new List<int> { 1, 2, 3, 4, 5 };
-                var ran = new Random();
-                
-                Parallel.For(0, 1000000, i =>
-                {
-                    var r = ran.Next(5);
-                    var res = a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString()+","+
-                     a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString() + "," + a[r].ToString();
-                    var ele = res.Split(',');
-                    var summ = 0;
-                    var s = Convert.ToInt32(ele[0]);
-                    foreach (var d in ele)
-                        summ += Convert.ToInt32(d);
-                    if (summ != s * 12)
-                    {
-                        Console.WriteLine("fuseigo");
-                    }
-                });
             }
             if (key == "ptlc")
             {
