@@ -38,8 +38,16 @@ namespace BTCSIM2
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
         }
 
+        
+
         static void Main(string[] args)
         {
+
+            double testfunc(int i, int a, int b, int c)
+            {
+                return i * (a - b) * c;
+            }
+
             var key = "";
             while (true)
             {
@@ -66,10 +74,10 @@ namespace BTCSIM2
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
-            var from = 1000;
-            //var from = MarketData.Close.Count - 200000;
-            var to = 2000;
-            //var to = MarketData.Close.Count - 1;
+            //var from = 1000;
+            var from = MarketData.Close.Count - 100000;
+            //var to = 2000;
+            var to = MarketData.Close.Count - 1;
             //var leveraged_or_fixed_trading = "leveraged";
             var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 1000;
@@ -160,9 +168,17 @@ namespace BTCSIM2
             {
                 Console.WriteLine("test");
 
-                using (StreamWriter sw = new StreamWriter(@"./Data/test.csv"))
-                    sw.WriteLine(string.Join(",", terms));
-                Console.WriteLine("");
+                var a = new List<int> { 1, 2, 3, 4, 5 };
+                var ran = new Random();
+                Parallel.For(0, 1000000, i =>
+                {
+                    var r = ran.Next(5);
+                    var res = testfunc(i, a[r], a[r], a[r]);
+                    if (res != 0)
+                    {
+                        Console.WriteLine("fuseigo");
+                    }
+                });
             }
             if (key == "ptlc")
             {
@@ -275,11 +291,11 @@ namespace BTCSIM2
             else if (key == "madiv nanpin")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0067,0.0134,0.0202 };
-                var lot_splits = new List<double>() { 0.365482,0.274592,0.206305,0.155 };
+                var nanpin_timing = new List<double>() { 0.0037,0.0074,0.0111,0.0147,0.0184,0.0221,0.0258,0.0295,0.0332,0.0368,0.0405,0.0442 };
+                var lot_splits = new List<double>() { 0.035523,0.039824,0.044645,0.050051,0.056111,0.062905,0.070521,0.079059,0.088631,0.099363,0.111393,0.12488,0.14 };
                 var pt_ratio = 0.051;
-                var lc_ratio = 0.027;
-                var ma_term = 70;    
+                var lc_ratio = 0.048;
+                var ma_term = 280;    
                 var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
@@ -291,8 +307,8 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Read MA div nanpin Sim");
                 var read_sim_from = MarketData.Close.Count - 200000;
-                var read_sim_to = MarketData.Close.Count-100000;
-                var num_best_pl_for_test = 1000;
+                var read_sim_to = MarketData.Close.Count-1;
+                var num_best_pl_for_test = 10000;
                 var rsim = new ReadSim();
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 

@@ -275,7 +275,7 @@ namespace BTCSIM2
                         ", test win rate="+res_win_rate[i].ToString());
                     ac_list.TryRemove(i, out var d);
                     sim_list.TryRemove(i, out var s);
-                    res_win_rate.TryRemove(i, out var dd);
+                    res_write_contents.TryRemove(i, out var dd);
                     no++;
                 });
             }
