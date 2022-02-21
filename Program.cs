@@ -170,9 +170,11 @@ namespace BTCSIM2
 
                 var a = new List<int> { 1, 2, 3, 4, 5 };
                 var ran = new Random();
+                
                 Parallel.For(0, 1000000, i =>
                 {
                     var r = ran.Next(5);
+                    Thread.Sleep(r);
                     var res = testfunc(i, a[r], a[r], a[r]);
                     if (res != 0)
                     {
