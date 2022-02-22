@@ -75,8 +75,8 @@ namespace BTCSIM2
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
-            using (StreamWriter twriter = new StreamWriter("test.csv", false))
-            using (var swt = TextWriter.Synchronized(twriter))
+            using (StreamReader reader = new StreamReader("opt nanpin.csv"))
+            using (var sr = TextReader.Synchronized(reader))
             {
                 var progress = 0.0;
                 var n = 0.0;
@@ -103,7 +103,6 @@ namespace BTCSIM2
                             opt_para_gen.para_nanpin_lot[i].ToList(),
                             opt_para_gen.para_ma_term[i]
                             );
-                        swt.WriteLine(i.ToString()+","+ac_list[i].performance_data.total_pl.ToString()+","+opt_para_gen.para_pt[i].ToString()+","+opt_para_gen.para_lc[i].ToString());
                         res_total_capital[i] = ac_list[i].performance_data.total_capital;
                         res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
                         res_win_rate[i] = ac_list[i].performance_data.win_rate;
@@ -137,6 +136,20 @@ namespace BTCSIM2
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]);
                         sw.WriteLine(res_write_contents[i]);
+
+                        var data = sr.ReadLine();
+                        if (data != null)
+                        {
+                            var ele = data.Split(",");
+                            if (ele[0] != "No.")
+                            {
+                                if (ele[9] == opt_para_gen.para_pt[Convert.ToInt32(ele[0])].ToString())
+                                    ;
+                                else
+                                    Console.WriteLine("fuseigo");
+                            }
+                        }
+
                         checkNumNanpin(res_write_contents[i]);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
