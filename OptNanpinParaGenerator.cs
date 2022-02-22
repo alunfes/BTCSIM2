@@ -102,11 +102,11 @@ namespace BTCSIM2
             var n = 0;
             while (true)
             {
-                pt.Add(min_pt + (n * 0.001));
+                pt.Add(Math.Round(min_pt + (n * 0.001),4));
                 n++;
                 if (pt.Last() > max_pt)
                 {
-                    pt.Add(min_pt + (n * 0.001));
+                    pt.RemoveAt(pt.Count - 1);
                     break;
                 }
             }
@@ -121,7 +121,7 @@ namespace BTCSIM2
             var n = 0;
             while (true)
             {
-                lc.Add(min_lc + (n * 0.001));
+                lc.Add(Math.Round(min_lc + (n * 0.001),4));
                 n++;
                 if (lc.Last() > max_lc)
                 {
@@ -147,7 +147,7 @@ namespace BTCSIM2
             var res = new ConcurrentDictionary<int, double>();
             res[0] = 0.001;
             for (int i = 0; i < 40; i++)
-                res[i+1]= (i + 1) * 0.005;
+                res[i+1]= Math.Round((i + 1) * 0.005, 4);
             return res;
         }
         private ConcurrentDictionary<int, int> generateMATerm(List<int> ma_term)

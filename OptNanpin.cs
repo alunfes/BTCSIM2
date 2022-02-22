@@ -75,8 +75,8 @@ namespace BTCSIM2
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
-            using (StreamReader reader = new StreamReader("opt nanpin.csv"))
-            using (var sr = TextReader.Synchronized(reader))
+            using (StreamWriter twriter = new StreamWriter("test.csv", false))
+            using (var swt = TextWriter.Synchronized(twriter))
             {
                 var progress = 0.0;
                 var n = 0.0;
@@ -85,6 +85,7 @@ namespace BTCSIM2
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
                     var sim_list = new ConcurrentDictionary<int, Sim>();
+                    var test = new ConcurrentDictionary<indexer, string>();
                     Parallel.For(0, num_opt_calc, i =>
                     {
                         sim_list[i] = new Sim();
@@ -119,6 +120,7 @@ namespace BTCSIM2
                             res_ave_sell_pl[i] = 0;
                         res_realized_pl_sd[i] = ac_list[i].performance_data.realized_pl_ratio_sd;
                         res_total_capital_sd[i] = ac_list[i].performance_data.total_capital_sd;
+                        
                         res_write_contents[i] = i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
                         ac_list[i].performance_data.win_rate.ToString() + "," +
                         ac_list[i].performance_data.total_pl.ToString() + "," +
@@ -136,20 +138,6 @@ namespace BTCSIM2
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]);
                         sw.WriteLine(res_write_contents[i]);
-
-                        var data = sr.ReadLine();
-                        if (data != null)
-                        {
-                            var ele = data.Split(",");
-                            if (ele[0] != "No.")
-                            {
-                                if (ele[9] == opt_para_gen.para_pt[Convert.ToInt32(ele[0])].ToString())
-                                    ;
-                                else
-                                    Console.WriteLine("fuseigo");
-                            }
-                        }
-
                         checkNumNanpin(res_write_contents[i]);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
