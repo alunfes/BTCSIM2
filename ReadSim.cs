@@ -216,7 +216,6 @@ namespace BTCSIM2
                 var progress = 0.0;
                 var no = 0;
                 var ac_list = new ConcurrentDictionary<int, Account>();
-                var sim_list = new ConcurrentDictionary<int, Sim>();
                 Parallel.For(0, para_pt.Count, i =>
                 {
                     ac_list.TryAdd(i, doSim(ref lev_or_fixed,
@@ -228,28 +227,28 @@ namespace BTCSIM2
                             para_nanpin_timing[i],
                             para_nanpin_lot[i],
                             para_ma_term[i]));
-                    res_total_capital[i] = ac_list[i].performance_data.total_capital;
-                    res_total_pl[i] = ac_list[i].performance_data.total_pl;
-                    res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
-                    res_win_rate[i] = ac_list[i].performance_data.win_rate;
-                    res_num_trade[i] = ac_list[i].performance_data.num_trade;
-                    res_num_buy[i] = ac_list[i].performance_data.num_buy;
-                    res_num_sell[i] = ac_list[i].performance_data.num_sell;
+                    res_total_capital.TryAdd(i, ac_list[i].performance_data.total_capital);
+                    res_total_pl.TryAdd(i, ac_list[i].performance_data.total_pl);
+                    res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
+                    res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
+                    res_num_trade.TryAdd(i, ac_list[i].performance_data.num_trade);
+                    res_num_buy.TryAdd(i, ac_list[i].performance_data.num_buy);
+                    res_num_sell.TryAdd(i, ac_list[i].performance_data.num_sell);
                     if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
-                        res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
+                        res_ave_buy_pl.TryAdd(i, ac_list[i].performance_data.buy_pl_ratio_list.Average());
                     else
                         res_ave_buy_pl[i] = 0;
                     if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
-                        res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                        res_ave_sell_pl.TryAdd(i, ac_list[i].performance_data.sell_pl_ratio_list.Average());
                     else
-                        res_ave_sell_pl[i] = 0;
-                    res_realized_pl[i] = ac_list[i].performance_data.realized_pl;
-                    res_realized_pl_sd[i] = ac_list[i].performance_data.realized_pl_ratio_sd;
-                    res_total_capital_sd[i] = ac_list[i].performance_data.total_capital_sd;
-                    res_sharp_ratio[i] = ac_list[i].performance_data.sharp_ratio;
-                    res_total_capital_gradient[i] = ac_list[i].performance_data.total_capital_gradient;
+                        res_ave_sell_pl.TryAdd(i, 0);
+                    res_realized_pl.TryAdd(i, ac_list[i].performance_data.realized_pl);
+                    res_realized_pl_sd.TryAdd(i, ac_list[i].performance_data.realized_pl_ratio_sd);
+                    res_total_capital_sd.TryAdd(i, ac_list[i].performance_data.total_capital_sd);
+                    res_sharp_ratio.TryAdd(i, ac_list[i].performance_data.sharp_ratio);
+                    res_total_capital_gradient.TryAdd(i, ac_list[i].performance_data.total_capital_gradient);
 
-                    res_write_contents[i] = i.ToString() + "," + para_pt[i].ToString() + "," +
+                    res_write_contents.TryAdd(i, i.ToString() + "," + para_pt[i].ToString() + "," +
                     para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+
                     string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
@@ -259,7 +258,7 @@ namespace BTCSIM2
                     res_total_pl[i].ToString() + "," + res_realized_pl[i].ToString() + "," +
                     res_realized_pl_sd[i].ToString() + "," + res_total_capital_sd[i].ToString() + "," +
                     res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +
-                    res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString();
+                    res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString());
                     progress = Math.Round(100.0 * Convert.ToDouble(no) / Convert.ToDouble(para_lc.Count), 2);
                     sw.WriteLine(res_write_contents[i]);
                     Console.WriteLine(no.ToString() + "/" + para_lc.Count.ToString() + " - " + progress.ToString() + "%" +
@@ -267,7 +266,6 @@ namespace BTCSIM2
                         ", test sharp ratio="+res_sharp_ratio[i].ToString()+
                         ", test win rate="+res_win_rate[i].ToString());
                     ac_list.TryRemove(i, out var d);
-                    sim_list.TryRemove(i, out var s);
                     res_write_contents.TryRemove(i, out var dd);
                     no++;
                 });

@@ -49,19 +49,18 @@ namespace BTCSIM2
             var key = "";
             while (true)
             {
-                Console.WriteLine("\"test\" : test");
-                Console.WriteLine("\"ptlc\" : PTLC");
-                Console.WriteLine("\"nanpin\" : PTLC Nanpin");
-                Console.WriteLine("\"opt nanpin\" : Optimize nanpin parameters");
-                Console.WriteLine("\"rand\" : Randome generated param nanpin sim");
-                Console.WriteLine("\"multi nanpin\" : Multi param nanpin sim");
-                Console.WriteLine("\"madiv nanpin\" : MA div nanpin sim");
-                Console.WriteLine("\"read sim\" : Read MA div nanpin sim");
-                Console.WriteLine("\"read multi\" : Read multi MA div nanpin sim");
-                Console.WriteLine("\"opt select\" : Select Opt Nanpin id in best opt pl oreder");
+                Console.WriteLine("\"0: test\" : test");
+                Console.WriteLine("\"1: ptlc\" : PTLC");
+                Console.WriteLine("\"2: nanpin\" : PTLC Nanpin");
+                Console.WriteLine("\"3: opt nanpin\" : Optimize nanpin parameters");
+                Console.WriteLine("\"4: rand\" : Randome generated param nanpin sim");
+                Console.WriteLine("\"5: multi nanpin\" : Multi param nanpin sim");
+                Console.WriteLine("\"6: madiv nanpin\" : MA div nanpin sim");
+                Console.WriteLine("\"7: read sim\" : Read MA div nanpin sim");
+                Console.WriteLine("\"8: read multi\" : Read multi MA div nanpin sim");
+                Console.WriteLine("\"9: opt select\" : Select Opt Nanpin id in best opt pl oreder");
                 key = Console.ReadLine();
-                if (key == "nanpin" || key == "ptlc" || key == "test" || key == "opt nanpin" || key == "rand" || key =="multi nanpin" || key == "madiv nanpin" ||
-                    key == "read sim" || key == "read multi" || key == "opt select")
+                if (Convert.ToInt32(key) >=0 && Convert.ToInt32(key) <= 9)
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -162,7 +161,7 @@ namespace BTCSIM2
                 return nanpin_lots;
             }
 
-            if (key == "test")
+            if (key == "0")
             {
                 Console.WriteLine("test");
                 var d = new List<int>();
@@ -176,7 +175,7 @@ namespace BTCSIM2
                     d.Add(i);
                 });
             }
-            if (key == "ptlc")
+            if (key == "1")
             {
                 Console.WriteLine("PTLC");
                 var ac = new Account(leveraged_or_fixed_trading, false);
@@ -186,7 +185,7 @@ namespace BTCSIM2
                 ac = sim.sim_ptlc(from, to, ac, pt_ratio, lc_ratio);
                 displaySimResult(ac, "ptlc");
             }
-            else if (key == "nanpin")
+            else if (key == "2")
             {
                 Console.WriteLine("Nanpin PT/LC random buy sell entry");
                 var nanpin_timing = new List<double>() { 0.01, 0.02, 0.03 }; 
@@ -198,7 +197,7 @@ namespace BTCSIM2
                 ac = sim.sim_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits);
                 displaySimResult(ac, "nanpin");
             }
-            else if (key == "opt nanpin")
+            else if (key == "3")
             {
                 Console.WriteLine("optimize nanpin strategy parameter");
                 var o = new OptNanpin();
