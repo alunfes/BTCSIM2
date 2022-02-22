@@ -296,7 +296,7 @@ namespace BTCSIM2
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
                 //ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, contrarian);
-                ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term);
+                ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt_ratio, ref lc_ratio, ref nanpin_timing, ref lot_splits, ref ma_term);
                 displaySimResult(ac, "MA Div nanpin");
             }
             else if( key == "read sim")
@@ -349,9 +349,9 @@ namespace BTCSIM2
                     var ac = new Account(leveraged_or_fixed_trading, false);
                     var sim = new Sim();
                     if (strategy ==0)
-                        ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt, lc, nanpin_timing, nanpin_lot, ma_term, true);
+                        ac = sim.sim_madiv_nanpin_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, true);
                     else
-                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(from, to, ac, pt, lc, nanpin_timing, nanpin_lot, ma_term);
+                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term);
                     displaySimResult(ac, "Opt select sim");
                 }
             }

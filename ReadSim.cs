@@ -42,8 +42,8 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> para_lc { get; set; }
         public ConcurrentDictionary<int, int> para_ma_term { get; set; }
         public ConcurrentDictionary<int, int> para_num_split { get; set; }
-        public ConcurrentDictionary<int, double[]> para_nanpin_timing { get; set; }
-        public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
+        public ConcurrentDictionary<int, List<double>> para_nanpin_timing { get; set; }
+        public ConcurrentDictionary<int, List<double>> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, int> para_strategy { get; set; }
 
 
@@ -75,8 +75,8 @@ namespace BTCSIM2
             para_lc = new ConcurrentDictionary<int, double>();
             para_ma_term = new ConcurrentDictionary<int, int>();
             para_num_split = new ConcurrentDictionary<int, int>();
-            para_nanpin_timing = new ConcurrentDictionary<int, double[]>();
-            para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
+            para_nanpin_timing = new ConcurrentDictionary<int, List<double>>();
+            para_nanpin_lot = new ConcurrentDictionary<int, List<double>>();
             para_strategy = new ConcurrentDictionary<int, int>();
 
             opt_total_pl = new ConcurrentDictionary<int, double>();
@@ -198,8 +198,8 @@ namespace BTCSIM2
                         para_lc[target_no] = Convert.ToDouble(ele[10]);
                         para_num_split[target_no] = Convert.ToInt32(ele[11]);
                         para_ma_term[target_no] = Convert.ToInt32(ele[13]);
-                        para_nanpin_timing[target_no] = ele[15].Split(':').Select(double.Parse).ToArray();
-                        para_nanpin_lot[target_no] = ele[16].Split(':').Select(double.Parse).ToArray();
+                        para_nanpin_timing[target_no] = ele[15].Split(':').Select(double.Parse).ToArray().ToList();
+                        para_nanpin_lot[target_no] = ele[16].Split(':').Select(double.Parse).ToArray().ToList();
                         para_strategy[target_no] = Convert.ToInt32(ele[14]);
                         target_no++;
                     }
@@ -219,23 +219,15 @@ namespace BTCSIM2
                 var sim_list = new ConcurrentDictionary<int, Sim>();
                 Parallel.For(0, para_pt.Count, i =>
                 {
-                    sim_list[i] = new Sim();
-                    ac_list[i] = para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_or_fixed, true),
+                    ac_list.TryAdd(i, doSim(ref lev_or_fixed,
+                            para_strategy[i],
+                            ref from,
+                            ref to,
                             para_pt[i],
                             para_lc[i],
-                            para_nanpin_timing[i].ToList(),
-                            para_nanpin_lot[i].ToList(),
-                            para_ma_term[i],
-                            true
-                            ) :
-                            sim_list[i].sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_or_fixed, true),
-                            para_pt[i],
-                            para_lc[i],
-                            para_nanpin_timing[i].ToList(),
-                            para_nanpin_lot[i].ToList(),
-                            para_ma_term[i]
-                            );
-
+                            para_nanpin_timing[i],
+                            para_nanpin_lot[i],
+                            para_ma_term[i]));
                     res_total_capital[i] = ac_list[i].performance_data.total_capital;
                     res_total_pl[i] = ac_list[i].performance_data.total_pl;
                     res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
@@ -282,6 +274,14 @@ namespace BTCSIM2
             }
         }
 
+        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term)
+        {
+            var sim = new Sim();
+            if (strategy == 0)
+                return sim.sim_madiv_nanpin_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, true);
+            else
+                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term);
+        }
 
         public List<int> generateBestPlIndList(int num_select)
         {
