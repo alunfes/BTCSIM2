@@ -85,43 +85,42 @@ namespace BTCSIM2
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
                     var sim_list = new ConcurrentDictionary<int, Sim>();
-                    var test = new ConcurrentDictionary<indexer, string>();
+                    var test = new ConcurrentDictionary<int, string>();
                     Parallel.For(0, num_opt_calc, i =>
                     {
-                        sim_list[i] = new Sim();
-                        ac_list[i] = opt_para_gen.para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_fixed_trading, true),
+                        sim_list.TryAdd(i, new Sim());
+                        ac_list.TryAdd(i, opt_para_gen.para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_fixed_trading, true),
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
-                            opt_para_gen.para_nanpin_timing[i].ToList(),
-                            opt_para_gen.para_nanpin_lot[i].ToList(),
+                            opt_para_gen.para_nanpin_timing[i],
+                            opt_para_gen.para_nanpin_lot[i],
                             opt_para_gen.para_ma_term[i],
                             false
                             ) :
                             sim_list[i].sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_fixed_trading, true),
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
-                            opt_para_gen.para_nanpin_timing[i].ToList(),
-                            opt_para_gen.para_nanpin_lot[i].ToList(),
+                            opt_para_gen.para_nanpin_timing[i],
+                            opt_para_gen.para_nanpin_lot[i],
                             opt_para_gen.para_ma_term[i]
-                            );
-                        res_total_capital[i] = ac_list[i].performance_data.total_capital;
-                        res_total_pl_ratio[i] = ac_list[i].performance_data.total_pl_ratio;
-                        res_win_rate[i] = ac_list[i].performance_data.win_rate;
-                        res_num_trade[i] = ac_list[i].performance_data.num_trade;
-                        res_num_buy[i] = ac_list[i].performance_data.num_buy;
-                        res_num_sell[i] = ac_list[i].performance_data.num_sell;
+                            ));
+                        res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
+                        res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
+                        res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
+                        res_num_trade.TryAdd(i, ac_list[i].performance_data.num_trade);
+                        res_num_buy.TryAdd(i, ac_list[i].performance_data.num_buy);
+                        res_num_sell.TryAdd(i, ac_list[i].performance_data.num_sell);
                         if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
-                            res_ave_buy_pl[i] = ac_list[i].performance_data.buy_pl_ratio_list.Average();
+                            res_ave_buy_pl.TryAdd(i, ac_list[i].performance_data.buy_pl_ratio_list.Average());
                         else
                             res_ave_buy_pl[i] = 0;
                         if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
-                            res_ave_sell_pl[i] = ac_list[i].performance_data.sell_pl_ratio_list.Average();
+                            res_ave_sell_pl.TryAdd(i, ac_list[i].performance_data.sell_pl_ratio_list.Average());
                         else
-                            res_ave_sell_pl[i] = 0;
-                        res_realized_pl_sd[i] = ac_list[i].performance_data.realized_pl_ratio_sd;
-                        res_total_capital_sd[i] = ac_list[i].performance_data.total_capital_sd;
-                        
-                        res_write_contents[i] = i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
+                            res_ave_sell_pl.TryAdd(i, 0);
+                        res_realized_pl_sd.TryAdd(i,ac_list[i].performance_data.realized_pl_ratio_sd);
+                        res_total_capital_sd.TryAdd(i, ac_list[i].performance_data.total_capital_sd);
+                        res_write_contents.TryAdd(i, i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
                         ac_list[i].performance_data.win_rate.ToString() + "," +
                         ac_list[i].performance_data.total_pl.ToString() + "," +
                         ac_list[i].performance_data.realized_pl.ToString() + "," +
@@ -136,9 +135,8 @@ namespace BTCSIM2
                         opt_para_gen.para_ma_term[i].ToString() + "," +
                         opt_para_gen.para_strategy[i].ToString() +","+
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
-                        string.Join(":",opt_para_gen.para_nanpin_lot[i]);
+                        string.Join(":",opt_para_gen.para_nanpin_lot[i]));
                         sw.WriteLine(res_write_contents[i]);
-                        checkNumNanpin(res_write_contents[i]);
                         n++;
                         progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
                         Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
@@ -156,15 +154,6 @@ namespace BTCSIM2
                 }
             }
         }
-
-
-        private void checkNumNanpin(string contents)
-        {
-            var ele = contents.Split(',');
-            if (ele[15].Split(':').Length + 1 != ele[16].Split(':').Length)
-                Console.WriteLine("checkNumNanpin: nanpin log / timing is not matched !");
-        }
-        
 
 
         Dictionary<string, List<double[]>> getNanpinParam(double pt, double lc, int num_splits, int select_func_no)
