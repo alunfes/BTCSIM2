@@ -84,26 +84,18 @@ namespace BTCSIM2
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
-                    var sim_list = new ConcurrentDictionary<int, Sim>();
                     var test = new ConcurrentDictionary<int, string>();
                     Parallel.For(0, num_opt_calc, i =>
                     {
-                        sim_list.TryAdd(i, new Sim());
-                        ac_list.TryAdd(i, opt_para_gen.para_strategy[i] == 0 ? sim_list[i].sim_madiv_nanpin_ptlc(from, to, new Account(lev_fixed_trading, true),
+                        ac_list.TryAdd(i, doSim(ref lev_fixed_trading,
+                            opt_para_gen.para_strategy[i],
+                            ref from,
+                            ref to,
                             opt_para_gen.para_pt[i],
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i],
                             opt_para_gen.para_nanpin_lot[i],
-                            opt_para_gen.para_ma_term[i],
-                            false
-                            ) :
-                            sim_list[i].sim_madiv_nanpin_rapid_side_change_ptlc(from, to, new Account(lev_fixed_trading, true),
-                            opt_para_gen.para_pt[i],
-                            opt_para_gen.para_lc[i],
-                            opt_para_gen.para_nanpin_timing[i],
-                            opt_para_gen.para_nanpin_lot[i],
-                            opt_para_gen.para_ma_term[i]
-                            ));
+                            opt_para_gen.para_ma_term[i]));
                         res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
                         res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
                         res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
@@ -144,7 +136,6 @@ namespace BTCSIM2
                             ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
                             ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
                         ac_list.TryRemove(i, out var d);
-                        sim_list.TryRemove(i, out var s);
                         res_write_contents.TryRemove(i, out var dd);
                     });
                 }
@@ -155,6 +146,15 @@ namespace BTCSIM2
             }
         }
 
+
+        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term)
+        {
+            var sim = new Sim();
+            if (strategy == 0)
+                return sim.sim_madiv_nanpin_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, true);
+            else
+                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term);
+        }
 
         Dictionary<string, List<double[]>> getNanpinParam(double pt, double lc, int num_splits, int select_func_no)
         {

@@ -59,7 +59,7 @@ namespace BTCSIM2
             return ac;
         }
 
-        public Account sim_madiv_nanpin_ptlc(int from, int to, Account ac, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, bool flg_contrarian)
+        public Account sim_madiv_nanpin_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, bool flg_contrarian)
         {
             RandomSeed.initialize();
             var strategy = new Strategy();
@@ -82,7 +82,7 @@ namespace BTCSIM2
             return ac;
         }
 
-        public Account sim_madiv_nanpin_rapid_side_change_ptlc(int from, int to, Account ac, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term)
+        public Account sim_madiv_nanpin_rapid_side_change_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term)
         {
             RandomSeed.initialize();
             var strategy = new Strategy();
