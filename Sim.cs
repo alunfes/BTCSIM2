@@ -82,13 +82,13 @@ namespace BTCSIM2
             return ac;
         }
 
-        public Account sim_madiv_nanpin_rapid_side_change_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term)
+        public Account sim_madiv_nanpin_rapid_side_change_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, ref double rapid_side_change_ratio)
         {
             RandomSeed.initialize();
             var strategy = new Strategy();
             for (int i = from; i < to - 1; i++)
             {
-                var actions = strategy.NanpinPtlcMADivRapidSideChangeStrategy(i, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, ac);
+                var actions = strategy.NanpinPtlcMADivRapidSideChangeStrategy(i, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, rapid_side_change_ratio, ac);
                 for (int j = 0; j < actions.action.Count; j++)
                 {
                     if (actions.action[j] == "entry")

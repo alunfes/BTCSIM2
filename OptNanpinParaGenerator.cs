@@ -22,6 +22,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, List<double>> para_nanpin_timing { get; set; }
         public ConcurrentDictionary<int, List<double>> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, int> para_strategy { get; set; }
+        public ConcurrentDictionary<int, double> para_rapid_side_change_ratio { get; set; }
 
 
         private void initializer()
@@ -34,6 +35,7 @@ namespace BTCSIM2
             para_nanpin_timing = new ConcurrentDictionary<int, List<double>>();
             para_nanpin_lot = new ConcurrentDictionary<int, List<double>>();
             para_strategy = new ConcurrentDictionary<int, int>();
+            para_rapid_side_change_ratio = new ConcurrentDictionary<int, double>();
         }
 
 
@@ -47,7 +49,8 @@ namespace BTCSIM2
             var ma_term = generateMATerm(MarketData.terms);
             var min_lot = generateMinLot();
             var strategy = generateStrategy();
-            var para_ind_combination = generateParamIndCombination(num_select_params, pt, lc, num_split, func, ma_term, min_lot, strategy); //generate combination of all parameters
+            var rapid_side = generateRapidSideChange();
+            var para_ind_combination = generateParamIndCombination(num_select_params, pt, lc, num_split, func, ma_term, min_lot, strategy, rapid_side); //generate combination of all parameters
             //randomly select the parameter combinations and get nanpin timing / lot
             var random_params_ind = new ConcurrentDictionary<int, int>();
             var ran = new Random();
@@ -77,6 +80,7 @@ namespace BTCSIM2
                 para_nanpin_timing.TryAdd(i, nanpin_dict[i].Values.ToList()[0].ToList()[0].ToList());
                 para_nanpin_lot.TryAdd(i, nanpin_dict[i].Values.ToList()[0].ToList()[1].ToList());
                 para_strategy.TryAdd(i, strategy[para_ind_combination[random_params_ind[i]][6]]);
+                para_rapid_side_change_ratio.TryAdd(i, rapid_side[para_ind_combination[random_params_ind[i]][7]]);
             });
             Console.WriteLine("Completed OptNanpinParaGenerator");
         }
@@ -150,17 +154,24 @@ namespace BTCSIM2
             res.TryAdd(1, 1);
             return res;
         }
+        private ConcurrentDictionary<int, double> generateRapidSideChange()
+        {
+            var res = new ConcurrentDictionary<int, double>();
+            for (int i = 0; i < 95; i++)
+                res.TryAdd(i, (i + 1) * 0.01);
+            return res;
+        }
 
 
         //各パラメータのランダムな組み合わせを生成する。
         private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num_select, ConcurrentDictionary<int, double> pt, ConcurrentDictionary<int, double> lc,
-            ConcurrentDictionary<int, int> num_split, List<int> funcs, ConcurrentDictionary<int, int> ma_term, ConcurrentDictionary<int, double> min_lot, ConcurrentDictionary<int, int> strategy)
+            ConcurrentDictionary<int, int> num_split, List<int> funcs, ConcurrentDictionary<int, int> ma_term, ConcurrentDictionary<int, double> min_lot, ConcurrentDictionary<int, int> strategy, ConcurrentDictionary<int, double> rapid_side)
         {
             var res = new ConcurrentDictionary<string, List<int>>();
             var ran = new Random();
             for(int i=0; i<num_select; i++)
             {
-                var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0,strategy.Count) };
+                var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0,strategy.Count), ran.Next(0, rapid_side.Count) };
                 res.TryAdd(string.Join("", ind_combi), ind_combi);
             }
             while(true)//maybe no need
@@ -169,7 +180,7 @@ namespace BTCSIM2
                     break;
                 else
                 {
-                    var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0, strategy.Count) };
+                    var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0, strategy.Count), ran.Next(0, rapid_side.Count) };
                     res[string.Join("", ind_combi)] = ind_combi;
                 }
             }

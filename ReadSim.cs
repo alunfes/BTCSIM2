@@ -45,6 +45,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, List<double>> para_nanpin_timing { get; set; }
         public ConcurrentDictionary<int, List<double>> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, int> para_strategy { get; set; }
+        public ConcurrentDictionary<int, double> para_rapid_side_change_ratio { get; set; }
 
 
         public ReadSim()
@@ -78,6 +79,7 @@ namespace BTCSIM2
             para_nanpin_timing = new ConcurrentDictionary<int, List<double>>();
             para_nanpin_lot = new ConcurrentDictionary<int, List<double>>();
             para_strategy = new ConcurrentDictionary<int, int>();
+            para_rapid_side_change_ratio = new ConcurrentDictionary<int, double>();
 
             opt_total_pl = new ConcurrentDictionary<int, double>();
             opt_realized_pl = new ConcurrentDictionary<int, double>();
@@ -198,9 +200,10 @@ namespace BTCSIM2
                         para_lc[target_no] = Convert.ToDouble(ele[10]);
                         para_num_split[target_no] = Convert.ToInt32(ele[11]);
                         para_ma_term[target_no] = Convert.ToInt32(ele[13]);
-                        para_nanpin_timing[target_no] = ele[15].Split(':').Select(double.Parse).ToArray().ToList();
-                        para_nanpin_lot[target_no] = ele[16].Split(':').Select(double.Parse).ToArray().ToList();
                         para_strategy[target_no] = Convert.ToInt32(ele[14]);
+                        para_rapid_side_change_ratio[target_no] = Convert.ToDouble(ele[15]);
+                        para_nanpin_timing[target_no] = ele[16].Split(':').Select(double.Parse).ToArray().ToList();
+                        para_nanpin_lot[target_no] = ele[17].Split(':').Select(double.Parse).ToArray().ToList();
                         target_no++;
                     }
                     no++;
@@ -210,7 +213,7 @@ namespace BTCSIM2
             using (StreamWriter writer = new StreamWriter("read sim.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
             {
-                sw.WriteLine("No,pt,lc,ma term,strategy id,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl sd,opt total capital sd,opt num trade,opt win rate," +
+                sw.WriteLine("No,pt,lc,ma term,strategy id,rapid side change ratio,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl sd,opt total capital sd,opt num trade,opt win rate," +
                     "opt sharp ratio,opt total capital gradient,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
                     "test sharp ratio,test total capital gradient");
                 var progress = 0.0;
@@ -226,7 +229,8 @@ namespace BTCSIM2
                             para_lc[i],
                             para_nanpin_timing[i],
                             para_nanpin_lot[i],
-                            para_ma_term[i]));
+                            para_ma_term[i],
+                            para_rapid_side_change_ratio[i]));
                     res_total_capital.TryAdd(i, ac_list[i].performance_data.total_capital);
                     res_total_pl.TryAdd(i, ac_list[i].performance_data.total_pl);
                     res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
@@ -249,7 +253,7 @@ namespace BTCSIM2
                     res_total_capital_gradient.TryAdd(i, ac_list[i].performance_data.total_capital_gradient);
 
                     res_write_contents.TryAdd(i, i.ToString() + "," + para_pt[i].ToString() + "," +
-                    para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+
+                    para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+para_rapid_side_change_ratio[i].ToString()+","+
                     string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
                     opt_realized_pl_sd[i].ToString() + "," + opt_total_capital_sd[i].ToString() + "," +
@@ -272,13 +276,13 @@ namespace BTCSIM2
             }
         }
 
-        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term)
+        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term, double rapid_side)
         {
             var sim = new Sim();
             if (strategy == 0)
                 return sim.sim_madiv_nanpin_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, true);
             else
-                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term);
+                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, ref rapid_side);
         }
 
         public List<int> generateBestPlIndList(int num_select)

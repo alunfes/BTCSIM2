@@ -34,8 +34,9 @@ namespace BTCSIM2
             var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient" };
             var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(),
                 ac.performance_data.ave_daily_pl.ToString(), ac.performance_data.daily_pl_sd.ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
-            Math.Round(ac.performance_data.max_pl,4).ToString(), Math.Round(ac.performance_data.buy_pl_list.Average(), 4).ToString(),
-                Math.Round(ac.performance_data.sell_pl_list.Average(), 4).ToString(), Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString(),
+            Math.Round(ac.performance_data.max_pl,4).ToString(), ac.performance_data.buy_pl_list.Count > 0 ? Math.Round(ac.performance_data.buy_pl_list.Average(), 4).ToString() : "0",
+                ac.performance_data.sell_pl_list.Count >0 ? Math.Round(ac.performance_data.sell_pl_list.Average(), 4).ToString() : "0",
+                ac.holding_data.holding_period_list.Count >0 ? Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString() : "0",
                 ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString()};
             LineChart.DisplayLineChart3(ac.performance_data.total_capital_list, ac.performance_data.log_close, ac.performance_data.num_trade_list, table_labels, table_data, title + ": from=" + ac.start_ind.ToString() + ", to=" + ac.end_ind.ToString());
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
@@ -71,12 +72,12 @@ namespace BTCSIM2
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
-            var from = 1000;
-            //var from = MarketData.Close.Count - 100000;
+            //var from = 1000;
+            var from = MarketData.Close.Count - 100000;
             //var to = 2000;
             var to = MarketData.Close.Count - 1;
-            //var leveraged_or_fixed_trading = "leveraged";
-            var leveraged_or_fixed_trading = "fixed";
+            var leveraged_or_fixed_trading = "leveraged";
+            //var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 10000;
 
 
@@ -203,7 +204,7 @@ namespace BTCSIM2
                 var o = new OptNanpin();
                 o.startOptMADivNanpin(from, to, true, leveraged_or_fixed_trading, num_opt_calc);
             }
-            else if (key == "rand")
+            else if (key == "4")
             {
                 var r = new Random();
                 var pt = Convert.ToDouble(r.Next(1, 11)) / 100.0;
@@ -216,7 +217,7 @@ namespace BTCSIM2
                 ac = sim.sim_nanpin_ptlc(from, to, ac, pt, lc, d.Values.ToList()[0].ToList()[0].ToList(), d.Values.ToList()[0].ToList()[1].ToList());
                 displaySimResult(ac, "nanpin");
             }
-            else if(key == "multi nanpin")
+            else if(key == "5")
             {
                 Console.WriteLine("Multi Nanpin PT/LC random buy sell entry");
                 var nanpin_timing = new List<double[]>() { new double[] { 0.008, 0.016, 0.024, 0.032 }, new double[] { 0.0089,0.0178,0.0267,0.0356,0.0444,0.0533,0.0622,0.0711 }, new double[] { 0.0044,0.0089,0.0133,0.0178,0.0222,0.0267,0.0311,0.0356 },
@@ -283,22 +284,23 @@ namespace BTCSIM2
                 LineChart.DisplayLineChart3(consolidated_total_capital_list, MarketData.Close.GetRange(ac_list[0].start_ind, ac_list[0].end_ind).ToList(), consolidated_num_trade, table_labels, table_data, "from=" + ac_list[0].start_ind.ToString() + ", to=" + ac_list[0].end_ind.ToString());
                 System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
             }
-            else if (key == "madiv nanpin")
+            else if (key == "6")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
                 var nanpin_timing = new List<double>() { 0.0037,0.0074,0.0111,0.0147,0.0184,0.0221,0.0258,0.0295,0.0332,0.0368,0.0405,0.0442 };
                 var lot_splits = new List<double>() { 0.035523,0.039824,0.044645,0.050051,0.056111,0.062905,0.070521,0.079059,0.088631,0.099363,0.111393,0.12488,0.14 };
                 var pt_ratio = 0.051;
                 var lc_ratio = 0.048;
-                var ma_term = 280;    
-                var contrarian = true;
+                var ma_term = 280;
+                var rapid_side_change_ratio = 0.7;
+                //var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
                 //ac = sim.sim_madiv_nanpin_ptlc(from, to, ac, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, contrarian);
-                ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt_ratio, ref lc_ratio, ref nanpin_timing, ref lot_splits, ref ma_term);
+                ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt_ratio, ref lc_ratio, ref nanpin_timing, ref lot_splits, ref ma_term, ref rapid_side_change_ratio);
                 displaySimResult(ac, "MA Div nanpin");
             }
-            else if( key == "read sim")
+            else if( key == "7")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
                 var read_sim_from = MarketData.Close.Count - 200000;
@@ -308,13 +310,13 @@ namespace BTCSIM2
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 
             }
-            else if(key == "read multi")
+            else if(key == "8")
             {
                 Console.WriteLine("Read multi MA div nanpin Sim");
                 var rs = new ReadSim();
                 rs.startMultiReadSim(from, to, 5, leveraged_or_fixed_trading);
             }
-            else if (key == "opt select")
+            else if (key == "9")
             {
                 Console.WriteLine("Please input opt strategy id for test.");
                 var d = Console.ReadLine();
@@ -323,7 +325,7 @@ namespace BTCSIM2
                     Console.WriteLine("invalid input !");
                 else
                 {
-                    double pt, lc;
+                    double pt, lc, rapid_side;
                     List<double> nanpin_timing, nanpin_lot;
                     int strategy, ma_term;
 
@@ -339,9 +341,10 @@ namespace BTCSIM2
                         pt = Convert.ToDouble(ele[9]);
                         lc = Convert.ToDouble(ele[10]);
                         ma_term = Convert.ToInt32(ele[13]);
-                        nanpin_timing = ele[15].Split(':').Select(double.Parse).ToList();
-                        nanpin_lot = ele[16].Split(':').Select(double.Parse).ToList();
                         strategy = Convert.ToInt32(ele[14]);
+                        rapid_side = Convert.ToDouble(ele[15]);
+                        nanpin_timing = ele[16].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[17].Split(':').Select(double.Parse).ToList();
                         Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
 
                     }
@@ -350,7 +353,7 @@ namespace BTCSIM2
                     if (strategy ==0)
                         ac = sim.sim_madiv_nanpin_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, true);
                     else
-                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term);
+                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side);
                     displaySimResult(ac, "Opt select sim");
                 }
             }

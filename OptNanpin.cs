@@ -37,6 +37,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double[]> para_nanpin_lot { get; set; }
         public ConcurrentDictionary<int, double[]> para_min_lot { get; set; }
         public ConcurrentDictionary<int, int> para_strategy { get; set; }
+        public ConcurrentDictionary<int, double> para_rapid_side_change_ratio { get; set; }
 
 
         private void initializer()
@@ -61,6 +62,7 @@ namespace BTCSIM2
             para_nanpin_lot = new ConcurrentDictionary<int, double[]>();
             para_min_lot = new ConcurrentDictionary<int, double[]>();
             para_strategy = new ConcurrentDictionary<int, int>();
+            para_rapid_side_change_ratio = new ConcurrentDictionary<int, double>();
         }
 
 
@@ -80,7 +82,7 @@ namespace BTCSIM2
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,pt,lc,num_split,func,ma_term,strategy id,rapid side change ratio,nanpin timing,lot splits");
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
@@ -95,7 +97,8 @@ namespace BTCSIM2
                             opt_para_gen.para_lc[i],
                             opt_para_gen.para_nanpin_timing[i],
                             opt_para_gen.para_nanpin_lot[i],
-                            opt_para_gen.para_ma_term[i]));
+                            opt_para_gen.para_ma_term[i],
+                            opt_para_gen.para_rapid_side_change_ratio[i]));
                         res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
                         res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
                         res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
@@ -126,6 +129,7 @@ namespace BTCSIM2
                         opt_para_gen.para_func[i].ToString() + "," +
                         opt_para_gen.para_ma_term[i].ToString() + "," +
                         opt_para_gen.para_strategy[i].ToString() +","+
+                        opt_para_gen.para_rapid_side_change_ratio[i].ToString()+","+
                         string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
                         string.Join(":",opt_para_gen.para_nanpin_lot[i]));
                         sw.WriteLine(res_write_contents[i]);
@@ -147,13 +151,13 @@ namespace BTCSIM2
         }
 
 
-        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term)
+        private Account doSim(ref string lev_or_fixed, int strategy, ref int from, ref int to, double pt, double lc, List<double> nanpint_timing, List<double> nanpin_lot, int ma_term, double rapid_side_change_ratio)
         {
             var sim = new Sim();
             if (strategy == 0)
                 return sim.sim_madiv_nanpin_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, true);
             else
-                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term);
+                return sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, new Account(lev_or_fixed, true), ref pt, ref lc, ref nanpint_timing, ref nanpin_lot, ref ma_term, ref rapid_side_change_ratio);
         }
 
         Dictionary<string, List<double[]>> getNanpinParam(double pt, double lc, int num_splits, int select_func_no)

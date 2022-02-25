@@ -182,7 +182,7 @@ namespace BTCSIM2
 
 
 
-        public StrategyActionData NanpinPtlcMADivRapidSideChangeStrategy(int i, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, Account ac)
+        public StrategyActionData NanpinPtlcMADivRapidSideChangeStrategy(int i, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, double rapid_side_change_ratio, Account ac)
         {
             var ad = new StrategyActionData();
             var ma_side = MarketData.Divergence[ma_term][i] > 0 ? "sell":"buy";
@@ -208,7 +208,7 @@ namespace BTCSIM2
             else //update pt lc price
             {
                 //最初のエントリーサイズに必要なコストの２倍以上の利益が出ていたら売って逆のsideで再エントリーする
-                var min_amount_for_side_change = ac.holding_data.holding_volume * (pt_ratio * 0.7);
+                var min_amount_for_side_change = ac.holding_data.holding_volume * (pt_ratio * rapid_side_change_ratio);
 
                 /*
                 if (ac.leveraged_or_fixed_amount_trading == "fixed")

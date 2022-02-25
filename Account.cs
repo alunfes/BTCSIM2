@@ -321,7 +321,7 @@ namespace BTCSIM2
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
-        public const double leverage_limit = 1.5;
+        public const double leverage_limit = 1.0;
         public const double required_margin_maintenace_rate = 0.8;
         public double margin_required = 0.0;
         public double margin_maintenace_rate = 0.0;
@@ -332,11 +332,8 @@ namespace BTCSIM2
         public bool silent_mode = false; //true: do not display message, use for opt nanpin and etc.
         public bool stop_sim = false; //true when stop sim trigger was hit (i.e. minimal capital requirement)
 
-
         public int start_ind = 0;
         public int end_ind = 0;
-
-
 
         public List<double> total_pl_list = new List<double>();
         public List<double> total_pl_ratio_list = new List<double>();
