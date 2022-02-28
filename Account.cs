@@ -33,6 +33,7 @@ namespace BTCSIM2
         public double max_pl { get; set; }
         public int num_force_exit { get; set; }
         public double total_capital_gradient { get; set; }
+        public double window_pl_ratio { get; set; }
         public List<double> log_close { get; set; }
 
         public int num_trade { get; set; }
@@ -81,6 +82,7 @@ namespace BTCSIM2
             max_pl = 0.0;
             num_force_exit = 0;
             total_capital_gradient = 0.0;
+            window_pl_ratio = 0.0;
             ave_daily_pl = 0.0;
             daily_pl_sd = 0.0;
         }
@@ -321,7 +323,7 @@ namespace BTCSIM2
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
-        public const double leverage_limit = 1.0;
+        public const double leverage_limit = 2.0;
         public const double required_margin_maintenace_rate = 0.8;
         public double margin_required = 0.0;
         public double margin_maintenace_rate = 0.0;
@@ -432,6 +434,31 @@ namespace BTCSIM2
                     current_dd = (performance_data.total_capital_list[i] - current_max)/current_max;
             }
             performance_data.max_dd = current_dd;
+        }
+
+        private void calcWindowPLRatio()
+        {
+            var window_size = 1440 * 7; //for a week
+            var window_pl_kijun = 0.0;
+            var num_below = 0;
+            var num_all = 0;
+            for (int i = 0; i < performance_data.total_capital_list.Count; i++)
+            {
+                if (i + window_size < performance_data.total_capital_list.Count)
+                {
+                    if ((performance_data.total_capital_list[i + window_size] - performance_data.total_capital_list[i]) / performance_data.total_capital_list[i] < window_pl_kijun)
+                    {
+                        num_below++;
+                    }
+                    num_all++;
+                }
+                else
+                    break;
+            }
+            if (num_below > 0)
+                performance_data.window_pl_ratio = Math.Round(Convert.ToDouble(num_below) / Convert.ToDouble(num_all), 6);
+            else
+                performance_data.window_pl_ratio = 0.0;
         }
 
 
@@ -555,6 +582,7 @@ namespace BTCSIM2
             calc_margin_data(i, close);
             calcDailyReturn();
             calcMaxDD();
+            calcWindowPLRatio();
             performance_data.max_pl = Math.Round(performance_data.unrealized_pl_ratio_list.Max(), 6);
             performance_data.realized_pl_ratio_sd = Math.Sqrt(calcVariance(performance_data.realized_pl_list));
             performance_data.total_capital_sd = Math.Sqrt(calcVariance(performance_data.total_capital_list));

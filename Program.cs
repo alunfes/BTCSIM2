@@ -31,13 +31,14 @@ namespace BTCSIM2
             Console.WriteLine("max_pl=" + ac.performance_data.max_pl);
             Console.WriteLine("ave_holding_period=" + ac.holding_data.holding_period_list.Average());
             Console.WriteLine("total_capital_gradient=" + ac.performance_data.total_capital_gradient);
-            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient" };
+            Console.WriteLine("total_capital_gradient=" + ac.performance_data.window_pl_ratio);
+            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient", "Window PL Ratio" };
             var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(),
                 ac.performance_data.ave_daily_pl.ToString(), ac.performance_data.daily_pl_sd.ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
             Math.Round(ac.performance_data.max_pl,4).ToString(), ac.performance_data.buy_pl_list.Count > 0 ? Math.Round(ac.performance_data.buy_pl_list.Average(), 4).ToString() : "0",
                 ac.performance_data.sell_pl_list.Count >0 ? Math.Round(ac.performance_data.sell_pl_list.Average(), 4).ToString() : "0",
                 ac.holding_data.holding_period_list.Count >0 ? Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString() : "0",
-                ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString()};
+                ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString(), ac.performance_data.window_pl_ratio.ToString()};
             LineChart.DisplayLineChart3(ac.performance_data.total_capital_list, ac.performance_data.log_close, ac.performance_data.num_trade_list, table_labels, table_data, title + ": from=" + ac.start_ind.ToString() + ", to=" + ac.end_ind.ToString());
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
         }
@@ -61,6 +62,7 @@ namespace BTCSIM2
                 Console.WriteLine("\"8: read multi\" : Read multi MA div nanpin sim");
                 Console.WriteLine("\"9: opt select\" : Select Opt Nanpin id in best opt pl oreder");
                 key = Console.ReadLine();
+
                 if (Convert.ToInt32(key) >=0 && Convert.ToInt32(key) <= 9)
                     break;
             }
@@ -72,9 +74,9 @@ namespace BTCSIM2
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
-            //var from = 1000;
-            var from = MarketData.Close.Count - 100000;
-            //var to = 2000;
+            var from = 1000;
+            //var from = MarketData.Close.Count - 100000;
+            //var to = 600000;
             var to = MarketData.Close.Count - 1;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
@@ -303,9 +305,9 @@ namespace BTCSIM2
             else if( key == "7")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
-                var read_sim_from = MarketData.Close.Count - 200000;
-                var read_sim_to = MarketData.Close.Count-1;
-                var num_best_pl_for_test = 10000;
+                var read_sim_from = 500000;
+                var read_sim_to = 550000;
+                var num_best_pl_for_test = 10;
                 var rsim = new ReadSim();
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 
