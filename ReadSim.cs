@@ -220,7 +220,7 @@ namespace BTCSIM2
             using (var sw = TextWriter.Synchronized(writer))
             {
                 sw.WriteLine("No,pt,lc,ma term,strategy id,rapid side change ratio,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl sd,opt total capital sd,opt num trade,opt win rate," +
-                    "opt sharp ratio,opt total capital gradient,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
+                    "opt sharp ratio,opt total capital gradient,opt window pl ratio,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
                     "test sharp ratio,test total capital gradient,test window pl ratio");
                 var progress = 0.0;
                 var no = 0;
@@ -265,7 +265,7 @@ namespace BTCSIM2
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
                     opt_realized_pl_sd[i].ToString() + "," + opt_total_capital_sd[i].ToString() + "," +
                     opt_num_trade[i].ToString() + "," + opt_win_rate[i].ToString() + "," +
-                    opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," +
+                    opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," + opt_window_pl_ratio[i].ToString()+","+
                     res_total_pl[i].ToString() + "," + res_realized_pl[i].ToString() + "," +
                     res_realized_pl_sd[i].ToString() + "," + res_total_capital_sd[i].ToString() + "," +
                     res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +

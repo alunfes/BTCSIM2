@@ -77,10 +77,10 @@ namespace BTCSIM2
             var from = 1000;
             //var from = MarketData.Close.Count - 100000;
             //var to = 600000;
-            var to = MarketData.Close.Count - 1;
+            var to = MarketData.Close.Count - 1000000;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
-            var num_opt_calc = 10000;
+            var num_opt_calc = 100;
 
 
             /*
@@ -305,9 +305,9 @@ namespace BTCSIM2
             else if( key == "7")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
-                var read_sim_from = 500000;
-                var read_sim_to = 550000;
-                var num_best_pl_for_test = 10;
+                var read_sim_from = MarketData.Close.Count-1000000;
+                var read_sim_to = MarketData.Close.Count - 500000;
+                var num_best_pl_for_test = 100;
                 var rsim = new ReadSim();
                 rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
 
@@ -340,13 +340,13 @@ namespace BTCSIM2
                             sr.ReadLine();
                         data = sr.ReadLine();
                         var ele = data.Split(',');
-                        pt = Convert.ToDouble(ele[9]);
-                        lc = Convert.ToDouble(ele[10]);
-                        ma_term = Convert.ToInt32(ele[13]);
-                        strategy = Convert.ToInt32(ele[14]);
-                        rapid_side = Convert.ToDouble(ele[15]);
-                        nanpin_timing = ele[16].Split(':').Select(double.Parse).ToList();
-                        nanpin_lot = ele[17].Split(':').Select(double.Parse).ToList();
+                        pt = Convert.ToDouble(ele[10]);
+                        lc = Convert.ToDouble(ele[11]);
+                        ma_term = Convert.ToInt32(ele[14]);
+                        strategy = Convert.ToInt32(ele[15]);
+                        rapid_side = Convert.ToDouble(ele[16]);
+                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
                         Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
 
                     }
