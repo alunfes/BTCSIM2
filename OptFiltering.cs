@@ -130,9 +130,8 @@ namespace BTCSIM2
                         ac_list[i].performance_data.sharp_ratio.ToString() + "," +
                         ac_list[i].performance_data.total_capital_gradient.ToString() + "," +
                         ac_list[i].performance_data.window_pl_ratio.ToString()+","+
-                        opt_para_pt.ToString() +","+opt_para_lc.ToString()+","+","+opt_para_num_split.ToString()+","+ opt_para_func.ToString()+","+ opt_para_ma_term.ToString()+","+opt_para_num_split.ToString()+","+
-                        opt_para_rapid_side_change_ratio.ToString()+","+opt_para_strategy.ToString()+","+
-                        string.Join(":", opt_para_nanpin_timing)+","+string.Join(":", opt_para_nanpin_lot)+","+
+                        opt_para_pt.ToString() +","+opt_para_lc.ToString()+","+opt_para_num_split.ToString()+","+ opt_para_func.ToString()+","+ opt_para_ma_term.ToString()+","+opt_para_strategy.ToString()+","+
+                        opt_para_rapid_side_change_ratio.ToString()+","+string.Join(":", opt_para_nanpin_timing)+","+string.Join(":", opt_para_nanpin_lot)+","+
                         para_filter_id[combi[i][0]].ToString()+","+ para_kijun_time_window[combi[i][1]].ToString()+","+
                         para_kijun_change[combi[i][2]].ToString()+","+ para_kijun_time_suspension[combi[i][3]].ToString());
                     sw.WriteLine(res_write_contents[i]);
