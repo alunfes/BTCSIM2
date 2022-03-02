@@ -38,7 +38,7 @@ namespace BTCSIM2
         public List<double> opt_para_nanpin_lot { get; set; }
 
 
-        public OptFiltering()
+        private void initialize()
         {
             res_total_capital = new ConcurrentDictionary<int, double>();
             res_total_pl_ratio = new ConcurrentDictionary<int, double>();
@@ -68,6 +68,20 @@ namespace BTCSIM2
             opt_para_nanpin_timing = new List<double>();
             opt_para_nanpin_lot = new List<double>();
         }
+
+
+        public OptFiltering()
+        {
+            initialize();
+        }
+
+
+        ~OptFiltering()
+        {
+            initialize();
+        }
+
+
 
         public void startOptFiltering(int target_opt_id, int num_opt_loop, string lev_or_fixed, int from, int to)
         {
@@ -121,7 +135,6 @@ namespace BTCSIM2
                         string.Join(":", opt_para_nanpin_timing)+","+string.Join(":", opt_para_nanpin_lot)+","+
                         para_filter_id[combi[i][0]].ToString()+","+ para_kijun_time_window[combi[i][1]].ToString()+","+
                         para_kijun_change[combi[i][2]].ToString()+","+ para_kijun_time_suspension[combi[i][3]].ToString());
-
                     sw.WriteLine(res_write_contents[i]);
                     n++;
                     progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_loop), 2);

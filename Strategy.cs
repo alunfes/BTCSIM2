@@ -245,7 +245,7 @@ namespace BTCSIM2
             var ad = new StrategyActionData();
             var ma_side = MarketData.Divergence[ma_term][i] > 0 ? "sell" : "buy";
             var opposite_side = ma_side == "buy" ? "sell" : "buy";
-
+            //var filter = new StrategyFilter();
             if (ac.holding_data.holding_side == "") //no holding place a first entry order
             {
                 if (ac.order_data.getNumOrders() > 0) //pt or lc was executed and nanpin limit order is remained
@@ -253,7 +253,7 @@ namespace BTCSIM2
                     ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
                     ad.add_action("ptlc", "", "", 0, 0, 0, 0, -1, "cancel pt lc order");
                 }
-                else if(StrategyFilter.applyFilter(i, ac, filter_id, kijun_time_window, kijun_change, kijun_time_suspension)==false) //proceed for nanpin entry
+                else if(StrategyFilter.applyFilter(i, ref ac, filter_id, kijun_time_window, kijun_change, kijun_time_suspension)==false) //proceed for nanpin entry
                 {
                     var pt = (ma_side == "buy" ? Math.Round(MarketData.Close[i] * pt_ratio) : Math.Round(MarketData.Close[i] * pt_ratio));
                     var lc = (ma_side == "buy" ? Math.Round(MarketData.Close[i] * lc_ratio) : Math.Round(MarketData.Close[i] * lc_ratio));
@@ -289,6 +289,7 @@ namespace BTCSIM2
         public StrategyActionData NanpinPtlcMADivFilterStrategy(int i, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, int filter_id, int kijun_time_window, double kijun_change, int kijun_time_suspension, Account ac)
         {
             var ad = new StrategyActionData();
+            //var filter = new StrategyFilter();
             if (ac.holding_data.holding_side == "") //no holding place a first entry order
             {
                 if (ac.order_data.getNumOrders() > 0) //pt or lc was executed and nanpin limit order is remained
@@ -296,7 +297,7 @@ namespace BTCSIM2
                     ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
                     ad.add_action("ptlc", "", "", 0, 0, 0, 0, -1, "cancel pt lc order");
                 }
-                else if((StrategyFilter.applyFilter(i, ac, filter_id, kijun_time_window, kijun_change, kijun_time_suspension) == false))
+                else if((StrategyFilter.applyFilter(i, ref ac, filter_id, kijun_time_window, kijun_change, kijun_time_suspension) == false))
                 {
                     var side = "";
                     if (MarketData.Divergence[ma_term][i] > 0)

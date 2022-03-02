@@ -7,16 +7,18 @@ namespace BTCSIM2
 {
     public class StrategyFilter
     {
-        public static bool applyFilter(int i, Account ac, int filter_id, int kijun_time_window, double kijun_change, int kijun_time_suspension)
+        private static object lock_master = new object();
+
+        public static bool applyFilter(int i, ref Account ac, int filter_id, int kijun_time_window, double kijun_change, int kijun_time_suspension)
         {
             if (filter_id == 0)
                 return priceChangeFilter(i, kijun_time_window, kijun_change);
             else if (filter_id == 1)
-                return lcFilter(i, ac, kijun_time_suspension);
+                return lcFilter(i, ref ac, kijun_time_suspension);
             else if (filter_id == 2)
-                return lcPriceChangeFilter(i, ac, kijun_time_window, kijun_time_suspension, kijun_change);
+                return lcPriceChangeFilter(i, ref ac, kijun_time_window, kijun_time_suspension, kijun_change);
             if (filter_id == 3)
-                return priceChangeRangeFilter(i, kijun_time_window, kijun_change);
+                return false;//priceChangeRangeFilter(i, kijun_time_window, kijun_change);
             else
             {
                 Console.WriteLine("StrategyFilter: Invalid filter id !");
@@ -33,7 +35,7 @@ namespace BTCSIM2
         }
 
         //lcした場合にその後x時間のエントリーを中止
-        private static bool lcFilter(int i, Account ac, int suspension_time)
+        private static bool lcFilter(int i, ref Account ac, int suspension_time)
         {
             if (ac.log_data.lc_points.Count > 0)
             {
@@ -48,11 +50,11 @@ namespace BTCSIM2
 
 
         //一定時間にx%以上変動してlcとなった場合に、その後x時間のエントリーを中止
-        private static bool lcPriceChangeFilter(int i, Account ac, int price_change_kijun_time_window, int suspension_time, double kijun_change)
+        private static bool lcPriceChangeFilter(int i, ref Account ac, int price_change_kijun_time_window, int suspension_time, double kijun_change)
         {
             if (priceChangeFilter(i, price_change_kijun_time_window, kijun_change))
             {
-                return lcFilter(i, ac, suspension_time);
+                return lcFilter(i, ref ac, suspension_time);
             }
             else
                 return false;

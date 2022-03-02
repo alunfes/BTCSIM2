@@ -107,7 +107,6 @@ namespace BTCSIM2
 
         public Account sim_madiv_nanpin_filter_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, ref int filter_id, ref int kijun_time_window, ref double kijun_change, ref int kijun_time_suspension)
         {
-            RandomSeed.initialize();
             var strategy = new Strategy();
             for (int i = from; i < to - 1; i++)
             {
