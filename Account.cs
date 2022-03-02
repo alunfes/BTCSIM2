@@ -33,7 +33,7 @@ namespace BTCSIM2
         public double max_pl { get; set; }
         public int num_force_exit { get; set; }
         public double total_capital_gradient { get; set; }
-        public double window_pl_ratio { get; set; }
+        public double window_pl_ratio { get; set; } //ratio of window that below the kijun pl ratio(0%). lower val is good.
         public List<double> log_close { get; set; }
 
         public int num_trade { get; set; }
@@ -241,6 +241,8 @@ namespace BTCSIM2
         public List<double> close_log { get; set; }
         public Dictionary<int, double> buy_points { get; set; }
         public Dictionary<int, double> sell_points { get; set; }
+        public List<int> lc_points { get; set; }
+        public List<int> pt_points { get; set; }
         public bool silent_mode { get; set; }
 
         public LogData(bool silent)
@@ -273,6 +275,8 @@ namespace BTCSIM2
             close_log = new List<double>();
             buy_points = new Dictionary<int, double>();
             sell_points = new Dictionary<int, double>();
+            pt_points = new List<int>();
+            lc_points = new List<int>();
             silent_mode = silent;
         }
 
@@ -323,7 +327,8 @@ namespace BTCSIM2
         public const double taker_fee = 0.00075;
         public const double maker_fee = -0.00025;
         public const double slip_page = 5.0; // applied only for market / stop market order
-        public const double leverage_limit = 2.0;
+        public const double leverage_limit = 2.0; //maximum leverage limit
+        public const double holding_levarage = 1.0; //use this leverage for entry
         public const double required_margin_maintenace_rate = 0.8;
         public double margin_required = 0.0;
         public double margin_maintenace_rate = 0.0;
@@ -361,7 +366,7 @@ namespace BTCSIM2
             else
                 Console.WriteLine("Account:Invalid  leveraged or fixed amount trading flg !" + ", " + leveraged_or_fixed_amount);
             fixed_amount = Math.Round(MarketData.High.Max() * 1.1, 2); //fixed tradingは常に一定金額での取引なのでBTC価格がいくらでも0．001のサイズは保証できる値にすべき
-            max_lev_total_amount = initial_capital * leverage_limit;
+            max_lev_total_amount = initial_capital * holding_levarage;
         }
 
 
@@ -518,11 +523,12 @@ namespace BTCSIM2
                     {
                         Console.WriteLine("Maintenace Margin is too small, force close all positions!");
                         Console.WriteLine("Margin Rate=" + margin_maintenace_rate + ", leverage=" + leverage.ToString());
+                        Console.WriteLine("max lev=" + leverage_limit + ", total capital=" + performance_data.total_capital + ", holding volume=" + holding_data.holding_volume);
                     }
                     performance_data.num_force_exit++;
                     exit_all(i, MarketData.Dt[i].ToString());
                 }
-                if (leverage >= leverage_limit * 1.5)
+                if (leverage >= leverage_limit * 1.1)
                 {
                     if (silent_mode == false)
                         Console.WriteLine("Leverage is higer than the limit !" + ", leverage="+leverage.ToString());
@@ -590,14 +596,11 @@ namespace BTCSIM2
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
             calc_sharp_ratio();
             calcDDPeriodRatio();
-            if (log_data.silent_mode == false)
-            {
-                log_data.close_log.Add(MarketData.Close[i]);
-                if (log_data.buy_points.Keys.Contains(i) == false)
-                    log_data.buy_points[i] = 0;
-                if (log_data.sell_points.Keys.Contains(i) == false)
-                    log_data.sell_points[i] = 0;
-            }
+            log_data.close_log.Add(MarketData.Close[i]);
+            if (log_data.buy_points.Keys.Contains(i) == false)
+                log_data.buy_points[i] = 0;
+            if (log_data.sell_points.Keys.Contains(i) == false)
+                log_data.sell_points[i] = 0;
             //log_data.log_data_table.WriteXml("log.html", XmlWriteMode.DiffGram);
             if (log_data.silent_mode==false)
                 writeCsv("log.csv", log_data.log_data_table);
@@ -892,6 +895,7 @@ namespace BTCSIM2
                             del_order(order_data.getLastSerialNum(), i);
                             order_data.pt_order = 0;
                             order_data.lc_order = 0;
+                            log_data.pt_points.Add(i);
                         }
                     }
                     if (order_data.lc_order > 0) //lc order is stop market order
@@ -904,6 +908,7 @@ namespace BTCSIM2
                             del_order(order_data.getLastSerialNum(), i);
                             order_data.pt_order = 0;
                             order_data.lc_order = 0;
+                            log_data.lc_points.Add(i);
                         }
                     }
                 }
@@ -918,6 +923,7 @@ namespace BTCSIM2
                             del_order(order_data.getLastSerialNum(), i);
                             order_data.pt_order = 0;
                             order_data.lc_order = 0;
+                            log_data.pt_points.Add(i);
                         }
                     }
                     if (order_data.lc_order > 0)
@@ -929,6 +935,7 @@ namespace BTCSIM2
                             del_order(order_data.getLastSerialNum(), i);
                             order_data.pt_order = 0;
                             order_data.lc_order = 0;
+                            log_data.lc_points.Add(i);
                         }
                     }
                 }

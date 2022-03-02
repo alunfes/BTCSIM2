@@ -79,8 +79,6 @@ namespace BTCSIM2
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
-            using (StreamWriter twriter = new StreamWriter("test.csv", false))
-            using (var swt = TextWriter.Synchronized(twriter))
             {
                 var progress = 0.0;
                 var n = 0.0;
@@ -88,7 +86,6 @@ namespace BTCSIM2
                 if (flg_paralell)
                 {
                     var ac_list = new ConcurrentDictionary<int, Account>();
-                    var test = new ConcurrentDictionary<int, string>();
                     Parallel.For(0, num_opt_calc, i =>
                     {
                         ac_list.TryAdd(i, doSim(ref lev_fixed_trading,

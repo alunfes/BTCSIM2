@@ -66,7 +66,6 @@ namespace BTCSIM2
             {
                 nanpin_dict.TryAdd(i,
                     getNanpinParam2(
-                        pt[para_ind_combination[random_params_ind[i]][0]],
                         lc[para_ind_combination[random_params_ind[i]][1]],
                         num_split[para_ind_combination[random_params_ind[i]][2]],
                         func[para_ind_combination[random_params_ind[i]][3]],
@@ -85,7 +84,7 @@ namespace BTCSIM2
             Console.WriteLine("Completed OptNanpinParaGenerator");
         }
 
-        private ConcurrentDictionary<int,double> generatePtList(double min_pt, double max_pt)
+        public ConcurrentDictionary<int,double> generatePtList(double min_pt, double max_pt)
         {
             var res = new ConcurrentDictionary<int, double>();
             var pt = new List<double>();
@@ -104,7 +103,7 @@ namespace BTCSIM2
                 res.TryAdd(i,pt[i]);
             return res;
         }
-        private ConcurrentDictionary<int, double> generateLcList(double min_lc, double max_lc)
+        public ConcurrentDictionary<int, double> generateLcList(double min_lc, double max_lc)
         {
             var lc = new List<double>();
             var res = new ConcurrentDictionary<int, double>();
@@ -123,7 +122,7 @@ namespace BTCSIM2
                 res.TryAdd(i,lc[i]);
             return res;
         }
-        private ConcurrentDictionary<int, int> generateNumSplit(int max_split)
+        public ConcurrentDictionary<int, int> generateNumSplit(int max_split)
         {
             var res = new ConcurrentDictionary<int, int>();
             for(int i=1; i<max_split; i++)
@@ -132,7 +131,7 @@ namespace BTCSIM2
             }
             return res;
         }
-        private ConcurrentDictionary<int, double> generateMinLot() //minlot=0.001, maxlot=0.2, total lot is always 1.0
+        public ConcurrentDictionary<int, double> generateMinLot() //minlot=0.001, maxlot=0.2, total lot is always 1.0
         {
             var res = new ConcurrentDictionary<int, double>();
             res.TryAdd(0,0.001);
@@ -140,21 +139,21 @@ namespace BTCSIM2
                 res.TryAdd(i+1, Math.Round((i + 1) * 0.005, 4));
             return res;
         }
-        private ConcurrentDictionary<int, int> generateMATerm(List<int> ma_term)
+        public ConcurrentDictionary<int, int> generateMATerm(List<int> ma_term)
         {
             var res = new ConcurrentDictionary<int, int>();
             for (int i = 0; i < ma_term.Count; i++)
                 res.TryAdd(i, ma_term[i]);
             return res;
         }
-        private ConcurrentDictionary<int, int> generateStrategy()
+        public ConcurrentDictionary<int, int> generateStrategy()
         {
             var res = new ConcurrentDictionary<int, int>();
             res.TryAdd(0, 0);
             res.TryAdd(1, 1);
             return res;
         }
-        private ConcurrentDictionary<int, double> generateRapidSideChange()
+        public ConcurrentDictionary<int, double> generateRapidSideChange()
         {
             var res = new ConcurrentDictionary<int, double>();
             for (int i = 0; i < 95; i++)
@@ -195,7 +194,7 @@ namespace BTCSIM2
          * 関数は同値分割（total_size / num）、x%ずつlotを上げる、x%ずつlotを下げるから選択する。
          * 
          */
-        private ConcurrentDictionary<int, List<double[]>> getNanpinParam2(double pt, double lc, int num_splits, int select_func_no, double minl)
+        public ConcurrentDictionary<int, List<double[]>> getNanpinParam2(double lc, int num_splits, int select_func_no, double minl)
         {
             var nanpin_lots = new ConcurrentDictionary<int, List<double[]>>(); //napin lot name, nanpin timing, lot splilit
             if (num_splits > 1)

@@ -61,9 +61,12 @@ namespace BTCSIM2
                 Console.WriteLine("\"7: read sim\" : Read MA div nanpin sim");
                 Console.WriteLine("\"8: read multi\" : Read multi MA div nanpin sim");
                 Console.WriteLine("\"9: opt select\" : Select Opt Nanpin id in best opt pl oreder");
+                Console.WriteLine("\"10: opt filtering\" : optimize filtering for selected opt");
+                Console.WriteLine("\"11: read filtering sim\" : Read Filtering Sim");
+                Console.WriteLine("\"12: opt filtering select\" : Select opt filtering id in best opt pl order");
                 key = Console.ReadLine();
 
-                if (Convert.ToInt32(key) >=0 && Convert.ToInt32(key) <= 9)
+                if (Convert.ToInt32(key) >=0 && Convert.ToInt32(key) <= 12)
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -191,8 +194,8 @@ namespace BTCSIM2
             else if (key == "2")
             {
                 Console.WriteLine("Nanpin PT/LC random buy sell entry");
-                var nanpin_timing = new List<double>() { 0.01, 0.02, 0.03 }; 
-                var lot_splits = new List<double>() { 0.1}; 
+                var nanpin_timing = new List<double>() { 0.01, 0.02, 0.03 };
+                var lot_splits = new List<double>() { 0.1 };
                 var pt_ratio = 0.013;
                 var lc_ratio = 0.045;
                 var ac = new Account(leveraged_or_fixed_trading, false);
@@ -219,7 +222,7 @@ namespace BTCSIM2
                 ac = sim.sim_nanpin_ptlc(from, to, ac, pt, lc, d.Values.ToList()[0].ToList()[0].ToList(), d.Values.ToList()[0].ToList()[1].ToList());
                 displaySimResult(ac, "nanpin");
             }
-            else if(key == "5")
+            else if (key == "5")
             {
                 Console.WriteLine("Multi Nanpin PT/LC random buy sell entry");
                 var nanpin_timing = new List<double[]>() { new double[] { 0.008, 0.016, 0.024, 0.032 }, new double[] { 0.0089,0.0178,0.0267,0.0356,0.0444,0.0533,0.0622,0.0711 }, new double[] { 0.0044,0.0089,0.0133,0.0178,0.0222,0.0267,0.0311,0.0356 },
@@ -230,7 +233,7 @@ namespace BTCSIM2
                 var lc = new List<double>() { 0.05, 0.09, 0.05, 0.09, 0.09 };
                 var ac_list = new List<Account>();
                 var sim = new Sim();
-                for (int i=0; i<pt.Count; i++)
+                for (int i = 0; i < pt.Count; i++)
                 {
                     var ac = new Account(leveraged_or_fixed_trading, true);
                     var ac_res = sim.sim_nanpin_ptlc(from, to, ac, pt[i], lc[i], nanpin_timing[i].ToList(), lot_splits[i].ToList());
@@ -239,11 +242,11 @@ namespace BTCSIM2
                 //consolidate multi nanpin results
                 var consolidated_total_capital_list = new List<double>();
                 var consolidated_num_trade = new List<int>();
-                for(int i=0; i<ac_list[0].performance_data.total_capital_list.Count; i++)
+                for (int i = 0; i < ac_list[0].performance_data.total_capital_list.Count; i++)
                 {
                     var sum = 0.0;
                     var n = 0.0;
-                    for(int j=0; j<ac_list.Count; j++)
+                    for (int j = 0; j < ac_list.Count; j++)
                     {
                         sum += ac_list[j].performance_data.total_capital_list[i];
                         n += ac_list[j].performance_data.num_trade_list[i];
@@ -260,7 +263,7 @@ namespace BTCSIM2
                 var ave_holding_period = new List<double>();
                 var ave_num_buy = new List<double>();
                 var ave_num_sell = new List<double>();
-                for (int i=0; i<ac_list.Count; i++)
+                for (int i = 0; i < ac_list.Count; i++)
                 {
                     ave_pl.Add(ac_list[i].performance_data.total_pl);
                     ave_pl_ratio.Add(ac_list[i].performance_data.total_pl_ratio);
@@ -273,14 +276,14 @@ namespace BTCSIM2
                     ave_num_sell.Add(ac_list[i].performance_data.num_sell);
 
                 }
-                Console.WriteLine("pl=" + Math.Round(ave_pl.Average(),4));
+                Console.WriteLine("pl=" + Math.Round(ave_pl.Average(), 4));
                 Console.WriteLine("pl ratio=" + Math.Round(ave_pl_ratio.Average(), 4));
                 Console.WriteLine("num trade=" + Math.Round(ave_num_trade.Average(), 4));
                 Console.WriteLine("win rate=" + Math.Round(ave_win_rate.Average(), 4));
                 Console.WriteLine("num_buy=" + Math.Round(ave_num_buy.Average(), 4));
                 Console.WriteLine("num_sell=" + Math.Round(ave_num_sell.Average(), 4));
                 Console.WriteLine("ave_holding_period=" + Math.Round(ave_holding_period.Average(), 4));
-                var table_labels = new List<string>() {"Ave PL", "Ave PL Ratio", "Ave Num Trade", "Ave Win Rate", "Ave Holding Period"};
+                var table_labels = new List<string>() { "Ave PL", "Ave PL Ratio", "Ave Num Trade", "Ave Win Rate", "Ave Holding Period" };
                 var table_data = new List<string>() { Math.Round(ave_pl.Average(), 4).ToString(), Math.Round(ave_pl_ratio.Average(), 4).ToString(), Math.Round(ave_num_trade.Average(), 4).ToString(),
                 Math.Round(ave_win_rate.Average(), 4).ToString(), Math.Round(ave_holding_period.Average(), 4).ToString()};
                 LineChart.DisplayLineChart3(consolidated_total_capital_list, MarketData.Close.GetRange(ac_list[0].start_ind, ac_list[0].end_ind).ToList(), consolidated_num_trade, table_labels, table_data, "from=" + ac_list[0].start_ind.ToString() + ", to=" + ac_list[0].end_ind.ToString());
@@ -289,8 +292,8 @@ namespace BTCSIM2
             else if (key == "6")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpin_timing = new List<double>() { 0.0037,0.0074,0.0111,0.0147,0.0184,0.0221,0.0258,0.0295,0.0332,0.0368,0.0405,0.0442 };
-                var lot_splits = new List<double>() { 0.035523,0.039824,0.044645,0.050051,0.056111,0.062905,0.070521,0.079059,0.088631,0.099363,0.111393,0.12488,0.14 };
+                var nanpin_timing = new List<double>() { 0.0037, 0.0074, 0.0111, 0.0147, 0.0184, 0.0221, 0.0258, 0.0295, 0.0332, 0.0368, 0.0405, 0.0442 };
+                var lot_splits = new List<double>() { 0.035523, 0.039824, 0.044645, 0.050051, 0.056111, 0.062905, 0.070521, 0.079059, 0.088631, 0.099363, 0.111393, 0.12488, 0.14 };
                 var pt_ratio = 0.051;
                 var lc_ratio = 0.048;
                 var ma_term = 280;
@@ -302,17 +305,17 @@ namespace BTCSIM2
                 ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt_ratio, ref lc_ratio, ref nanpin_timing, ref lot_splits, ref ma_term, ref rapid_side_change_ratio);
                 displaySimResult(ac, "MA Div nanpin");
             }
-            else if( key == "7")
+            else if (key == "7")
             {
                 Console.WriteLine("Read MA div nanpin Sim");
-                var read_sim_from = MarketData.Close.Count-1000000;
+                var read_sim_from = MarketData.Close.Count - 1000000;
                 var read_sim_to = MarketData.Close.Count - 500000;
                 var num_best_pl_for_test = 100;
                 var rsim = new ReadSim();
-                rsim.startReadSim(read_sim_from, read_sim_to, to - from, leveraged_or_fixed_trading, num_best_pl_for_test);
+                rsim.startReadSim(read_sim_from, read_sim_to, leveraged_or_fixed_trading, num_best_pl_for_test);
 
             }
-            else if(key == "8")
+            else if (key == "8")
             {
                 Console.WriteLine("Read multi MA div nanpin Sim");
                 var rs = new ReadSim();
@@ -352,10 +355,77 @@ namespace BTCSIM2
                     }
                     var ac = new Account(leveraged_or_fixed_trading, false);
                     var sim = new Sim();
-                    if (strategy ==0)
+                    if (strategy == 0)
                         ac = sim.sim_madiv_nanpin_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, true);
                     else
                         ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side);
+                    displaySimResult(ac, "Opt select sim");
+                }
+            }
+            else if (key == "10") //opt filtering
+            {
+                Console.WriteLine("Please input opt strategy id for filter optimization.");
+                var d = Console.ReadLine();
+                var opt_ind = 0;
+                if (int.TryParse(d, out opt_ind) == false)
+                    Console.WriteLine("invalid input !");
+                else
+                {
+                    var of = new OptFiltering();
+                    of.startOptFiltering(opt_ind, num_opt_calc, leveraged_or_fixed_trading, from, to);
+                }
+            }
+            else if (key == "11")
+            {
+                Console.WriteLine("Read Filtering Sim");
+                var read_sim_from = MarketData.Close.Count - 1000000;
+                var read_sim_to = MarketData.Close.Count - 1;
+                var rsim = new ReadFilteringSim();
+                rsim.startReadSim(read_sim_from, read_sim_to, leveraged_or_fixed_trading);
+
+            }
+            else if (key == "12")
+            {
+                Console.WriteLine("Please input opt strategy id for test.");
+                var d = Console.ReadLine();
+                var opt_ind = 0;
+                if (int.TryParse(d, out opt_ind) == false)
+                    Console.WriteLine("invalid input !");
+                else
+                {
+                    double pt, lc, rapid_side, kijun_change;
+                    List<double> nanpin_timing, nanpin_lot;
+                    int strategy, ma_term, filter_id, kijun_time_window, kijun_time_suspension;
+
+                    var rs = new ReadSim();
+                    var ind_list = rs.generateBestPlIndList(num_opt_calc);
+                    using (var sr = new StreamReader("opt param filter.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        for (int i = 0; i < ind_list[opt_ind]; i++)
+                            sr.ReadLine();
+                        data = sr.ReadLine();
+                        var ele = data.Split(',');
+                        pt = Convert.ToDouble(ele[10]);
+                        lc = Convert.ToDouble(ele[11]);
+                        ma_term = Convert.ToInt32(ele[14]);
+                        strategy = Convert.ToInt32(ele[15]);
+                        rapid_side = Convert.ToDouble(ele[16]);
+                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
+                        filter_id = Convert.ToInt32(ele[19]);
+                        kijun_time_window = Convert.ToInt32(ele[20]);
+                        kijun_change = Convert.ToDouble(ele[21]);
+                        kijun_time_suspension = Convert.ToInt32(ele[22]);
+                        Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
+
+                    }
+                    var ac = new Account(leveraged_or_fixed_trading, false);
+                    var sim = new Sim();
+                    if (strategy == 0)
+                        ac = sim.sim_madiv_nanpin_filter_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref filter_id, ref kijun_time_window, ref kijun_change, ref kijun_time_suspension);
+                    else
+                        ac = sim.sim_madiv_nanpin_rapid_side_change_filter_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side, ref filter_id, ref kijun_time_window, ref kijun_change, ref kijun_time_suspension);
                     displaySimResult(ac, "Opt select sim");
                 }
             }

@@ -176,7 +176,7 @@ namespace BTCSIM2
         }
 
 
-        public void startReadSim(int from, int to, int opt_term, string lev_or_fixed, int num_best_pl_for_test)
+        public void startReadSim(int from, int to, string lev_or_fixed, int num_best_pl_for_test)
         {
             initialize();
             var selected_ind = generateBestPlIndList(num_best_pl_for_test); //get index of test targets
