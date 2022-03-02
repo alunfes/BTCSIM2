@@ -61,7 +61,6 @@ namespace BTCSIM2
 
         public Account sim_madiv_nanpin_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, bool flg_contrarian)
         {
-            RandomSeed.initialize();
             var strategy = new Strategy();
             for (int i = from; i < to - 1; i++)
             {

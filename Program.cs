@@ -426,7 +426,7 @@ namespace BTCSIM2
                         ac = sim.sim_madiv_nanpin_filter_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref filter_id, ref kijun_time_window, ref kijun_change, ref kijun_time_suspension);
                     else
                         ac = sim.sim_madiv_nanpin_rapid_side_change_filter_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side, ref filter_id, ref kijun_time_window, ref kijun_change, ref kijun_time_suspension);
-                    displaySimResult(ac, "Opt select sim");
+                    displaySimResult(ac, "Opt filtering select sim");
                 }
             }
         }

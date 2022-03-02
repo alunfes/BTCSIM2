@@ -17,8 +17,12 @@ namespace BTCSIM2
                 return lcFilter(i, ref ac, kijun_time_suspension);
             else if (filter_id == 2)
                 return lcPriceChangeFilter(i, ref ac, kijun_time_window, kijun_time_suspension, kijun_change);
-            if (filter_id == 3)
-                return false;//priceChangeRangeFilter(i, kijun_time_window, kijun_change);
+            //need to enhance the function as it is not thread safe
+            /*if (filter_id == 3)
+            {
+                lock(lock_master)
+                    return priceChangeRangeFilter(i, kijun_time_window, kijun_change);
+            }*/
             else
             {
                 Console.WriteLine("StrategyFilter: Invalid filter id !");

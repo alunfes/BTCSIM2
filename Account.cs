@@ -491,7 +491,6 @@ namespace BTCSIM2
                 performance_data.unrealized_pl_ratio = 0.0;
                 performance_data.total_pl = Math.Round( performance_data.realized_pl + performance_data.unrealized_pl - performance_data.total_fee,2);
                 performance_data.total_capital = Math.Round(performance_data.total_pl + performance_data.initial_capital,2);
-                //performance_data.unrealized_pl_list = new List<double>();
             }
             performance_data.unrealized_pl_ratio = performance_data.unrealized_pl != 0 ? Math.Round(performance_data.unrealized_pl / (performance_data.total_capital - performance_data.unrealized_pl),4) : 0;
             performance_data.total_pl_ratio = Math.Round((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital,4);
@@ -516,7 +515,6 @@ namespace BTCSIM2
                 margin_required = Math.Round(holding_data.holding_volume / leverage_limit, 2);
                 margin_maintenace_rate = Math.Round(performance_data.total_capital / margin_required, 4);
                 leverage = Math.Round(holding_data.holding_volume / performance_data.total_capital, 4);
-                max_lev_total_amount = Math.Round(performance_data.total_capital * leverage_limit, 4);
                 if (margin_maintenace_rate <= required_margin_maintenace_rate)
                 {
                     if (silent_mode == false)
@@ -531,7 +529,10 @@ namespace BTCSIM2
                 if (leverage >= leverage_limit * 1.1)
                 {
                     if (silent_mode == false)
-                        Console.WriteLine("Leverage is higer than the limit !" + ", leverage="+leverage.ToString());
+                    {
+                        Console.WriteLine("Leverage is higer than the limit !" + ", leverage=" + leverage.ToString());
+                        Console.WriteLine("max lev=" + leverage_limit + ", total capital=" + performance_data.total_capital + ", holding volume=" + holding_data.holding_volume);
+                    }
                     performance_data.num_force_exit++;
                     exit_all(i, MarketData.Dt[i].ToString());
                 }

@@ -155,7 +155,7 @@ namespace BTCSIM2
             using (var sr = new StreamReader("opt nanpin.csv"))
             {
                 var data = sr.ReadLine();
-                for (int i = 0; i < best_pl_list[opt_strategy_id]; i++)
+                for (int i = 0; i < best_pl_list[opt_strategy_id]+1; i++)
                     data = sr.ReadLine();
                 var ele = data.Split(',');
                 opt_para_pt = Convert.ToDouble(ele[10]);
@@ -173,7 +173,7 @@ namespace BTCSIM2
         private ConcurrentDictionary<int, int> generateFilterID()
         {
             var res = new ConcurrentDictionary<int, int>();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
                 res.TryAdd(i, i);
             return res;
         }
