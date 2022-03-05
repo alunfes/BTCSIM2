@@ -173,16 +173,6 @@ namespace BTCSIM2
                 var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0,strategy.Count), ran.Next(0, rapid_side.Count) };
                 res.TryAdd(string.Join("", ind_combi), ind_combi);
             }
-            while(true)//maybe no need
-            {
-                if (res.Keys.Count >= num_select)
-                    break;
-                else
-                {
-                    var ind_combi = new List<int> { ran.Next(0, pt.Count), ran.Next(0, lc.Count), ran.Next(0, num_split.Count), ran.Next(0, funcs.Count), ran.Next(0, ma_term.Count), ran.Next(0, min_lot.Count), ran.Next(0, strategy.Count), ran.Next(0, rapid_side.Count) };
-                    res[string.Join("", ind_combi)] = ind_combi;
-                }
-            }
             var true_res = new ConcurrentDictionary<int, List<int>>();
             var reskeys = new List<string>(res.Keys);
             for (int i = 0; i < reskeys.Count; i++)

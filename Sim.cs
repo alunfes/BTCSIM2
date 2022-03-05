@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -150,5 +151,40 @@ namespace BTCSIM2
         }
 
 
+        public Account sim_select_strategy(int from, int to, ref List<Account> strategy_ac_list, Account ac, ref ConcurrentDictionary<int, double> para_pt,
+            ref ConcurrentDictionary<int, double> para_lc, ref ConcurrentDictionary<int, int> para_ma_term, ref ConcurrentDictionary<int, int> para_strategy_id,
+            ref ConcurrentDictionary<int, double> para_rapid_side_change_ratio, ref ConcurrentDictionary<int, List<double>> para_nanpin_timing,
+            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int pre_time_window, ref int strategy_time_window, ref double subordinate_ratio)
+        {
+            var strategy = new Strategy();
+            var current_selected_strategy_id = -1;
+            var strategy_applied_point = -1;
+            var num_select_change = 0;
+            for(int i=from; i<to-1; i++)
+            {
+                var res = strategy.SelectNanpinStrategy(i, current_selected_strategy_id, strategy_applied_point, ref strategy_ac_list, ac, ref para_pt, ref para_lc, ref para_ma_term,
+                    ref para_strategy_id, ref para_rapid_side_change_ratio, ref para_nanpin_timing, ref para_nanpin_lot, ref select_time_window, ref pre_time_window, ref strategy_time_window, ref subordinate_ratio);
+                var actions = res.Item1;
+                current_selected_strategy_id = res.Item2;
+                if (strategy_applied_point != res.Item3)
+                    num_select_change++;
+                strategy_applied_point = res.Item3;
+                for (int j = 0; j < actions.action.Count; j++)
+                {
+                    if (actions.action[j] == "entry")
+                        ac.entry_order(actions.order_type[j], actions.order_side[j], actions.order_size[j], actions.order_price[j], i, MarketData.Dt[i].ToString(), actions.order_message[j]);
+                    else if (actions.action[j] == "cancel")
+                        ac.cancel_all_order(i, MarketData.Dt[i].ToString());
+                    else if (actions.action[j] == "ptlc")
+                        ac.entry_ptlc(actions.pt_price, actions.lc_price);
+                }
+                ac.move_to_next(i + 1);
+            }
+            ac.last_day(to, MarketData.Close[to]);
+            ac.calc_sharp_ratio();
+            ac.passsing_info_from_sim.Add("num select change", num_select_change);
+            return ac;
+
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -209,13 +210,6 @@ namespace BTCSIM2
             {
                 //最初のエントリーサイズに必要なコストの２倍以上の利益が出ていたら売って逆のsideで再エントリーする
                 var min_amount_for_side_change = ac.holding_data.holding_volume * (pt_ratio * rapid_side_change_ratio);
-
-                /*
-                if (ac.leveraged_or_fixed_amount_trading == "fixed")
-                    min_amount_for_side_change = ac.fixed_amount * lot_splits[0] *0.014;
-                else if (ac.leveraged_or_fixed_amount_trading == "leveraged")
-                    min_amount_for_side_change = ac.max_lev_total_amount * lot_splits[0] * 0.014;
-                */
                 if (ac.holding_data.holding_side != ma_side && ac.performance_data.unrealized_pl > min_amount_for_side_change)
                 {
                     var pt = Math.Abs(MarketData.Close[i] - ac.holding_data.holding_price);
@@ -231,10 +225,6 @@ namespace BTCSIM2
                         ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
                 }
             }
-
-            //if (ac.holding_data.holding_size > 1.01)
-            //    Console.WriteLine("Holding size is larger than 1.0!");
-
             return ad;
         }
 
@@ -289,7 +279,6 @@ namespace BTCSIM2
         public StrategyActionData NanpinPtlcMADivFilterStrategy(int i, double pt_ratio, double lc_ratio, List<double> nanpin_timing, List<double> lot_splits, int ma_term, int filter_id, int kijun_time_window, double kijun_change, int kijun_time_suspension, Account ac)
         {
             var ad = new StrategyActionData();
-            //var filter = new StrategyFilter();
             if (ac.holding_data.holding_side == "") //no holding place a first entry order
             {
                 if (ac.order_data.getNumOrders() > 0) //pt or lc was executed and nanpin limit order is remained
@@ -322,6 +311,128 @@ namespace BTCSIM2
             }
             return ad;
         }
+
+
+        //(ad, selected_strategy_id, strategy_applied_point)
+        //
+        public (StrategyActionData, int, int) SelectNanpinStrategy(int i, int current_selected_strategy, int strategy_aplied_point, ref List<Account> strategy_ac_list, Account ac, ref ConcurrentDictionary<int, double> para_pt,
+            ref ConcurrentDictionary<int, double> para_lc, ref ConcurrentDictionary<int, int> para_ma_term, ref ConcurrentDictionary<int, int> para_strategy_id,
+            ref ConcurrentDictionary<int, double> para_rapid_side_change_ratio, ref ConcurrentDictionary<int, List<double>> para_nanpin_timing,
+            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int pre_time_window, ref int strategy_time_window, ref double subordinate_ratio)
+        {
+            var ad = new StrategyActionData();
+            var best_id = current_selected_strategy;
+            if (ac.holding_data.holding_side == "") //no holding place a first entry order
+            {
+                if (ac.order_data.getNumOrders() == 0) //new entry
+                {
+                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window);
+                    ad = placeNanpinOrder(i, best_id, ad, ref para_pt, ref para_lc, ref para_ma_term, ref para_nanpin_timing, ref para_nanpin_lot);
+                    strategy_aplied_point = i;
+                }
+            }
+            else
+            {
+                var if_change = checkPerformance(i, current_selected_strategy, strategy_aplied_point, strategy_ac_list, ref select_time_window, ref pre_time_window, ref subordinate_ratio);
+                if (if_change) //change current strategy
+                {
+                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window);
+                    ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
+                    ad.add_action("ptlc", "", "", 0, 0, 0, 0, -1, "cancel pt lc order");
+                    ad.add_action("entry", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "market", 0, ac.holding_data.holding_size, 0, 0, -1, "exit order as new strategy was selected");
+                    ad = placeNanpinOrder(i, best_id, ad, ref para_pt, ref para_lc, ref para_ma_term, ref para_nanpin_timing, ref para_nanpin_lot);
+                    strategy_aplied_point = i;
+                }
+                else //continue with the current strategy
+                {
+                    if (para_strategy_id[current_selected_strategy] == 1) //rapide side change strategy
+                    {
+                        var min_amount_for_side_change = ac.holding_data.holding_volume * (para_pt[current_selected_strategy] * para_rapid_side_change_ratio[current_selected_strategy]);
+                        var ma_side = MarketData.Divergence[para_ma_term[current_selected_strategy]][i] > 0 ? "sell" : "buy";
+                        if (ac.holding_data.holding_side != ma_side && ac.performance_data.unrealized_pl > min_amount_for_side_change)
+                        {
+                            var pt = Math.Abs(MarketData.Close[i] - ac.holding_data.holding_price);
+                            var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]) : Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]));
+                            ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
+                            ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //revise pt lc order
+                        }
+                        else
+                        {
+                            var pt = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * para_pt[current_selected_strategy]) : Math.Round(ac.holding_data.holding_price * para_pt[current_selected_strategy]));
+                            var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]) : Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]));
+                            if (ac.order_data.pt_order != pt || ac.order_data.lc_order != lc)
+                                ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
+                        }
+                    }
+                    else //non rapid side change strategy
+                    {
+                        var pt = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * para_pt[current_selected_strategy]) : Math.Round(ac.holding_data.holding_price * para_pt[current_selected_strategy]));
+                        var lc = (ac.holding_data.holding_side == "buy" ? Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]) : Math.Round(ac.holding_data.holding_price * para_lc[current_selected_strategy]));
+                        if (ac.order_data.pt_order != pt || ac.order_data.lc_order != lc)
+                            ad.add_action("ptlc", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
+                    }
+                }
+            }
+
+
+            /*
+             * どの戦略に切り替えるべきか：
+             * ->過去x時間(strategy time window)におけるplが一番高いもの。（plが高くても直近でマイナスパフォーマンスになっているものを避ける工夫が必要）
+             */
+            int getBestStrategy(int i, List<Account> strategy_ac_list, ref int strategy_time_window)
+            {
+                var pl_list = new List<double>();
+                for(int n=0; n<strategy_ac_list.Count; n++)
+                {
+                    var latest_total_capital = strategy_ac_list[n].performance_data.total_capital_list[i];
+                    var pre_total_capital = strategy_ac_list[n].performance_data.total_capital_list[i-strategy_time_window];
+                    pl_list.Add((latest_total_capital - pre_total_capital) / pre_total_capital);
+                }
+                return pl_list.IndexOf(pl_list.Max());
+            }
+
+            /*
+             * 切り替えタイミング：
+             * ->過去x時間(select_time_window)における時間あたりのplが、採用開始前のy時間(pre_time_window)の時間あたりplよりもz％(subordinate_ratio)以上劣後した場合。
+             */
+            bool checkPerformance(int i, int current_selected_strategy, int strategy_aplied_point, List<Account> strategy_ac_list, ref int select_time_window, ref int pre_time_window, ref double subordinate_ratio)
+            {
+                var select_current_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i];
+                var select_pre_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i - select_time_window];
+                var select_ave_pl = (select_current_total_capital - select_pre_total_capital) / Convert.ToDouble(select_time_window);
+                var applied_current_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point];
+                var applied_pre_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point - pre_time_window];
+                var applied_ave_pl = (applied_current_capital - applied_pre_capital) / Convert.ToDouble(pre_time_window);
+
+                if (select_ave_pl <= applied_ave_pl * (1.0 - subordinate_ratio))
+                    return true;
+                else
+                    return false;
+            }
+
+
+            StrategyActionData placeNanpinOrder(int i, int best_id, StrategyActionData ad, ref ConcurrentDictionary<int, double> para_pt,
+            ref ConcurrentDictionary<int, double> para_lc, ref ConcurrentDictionary<int, int> para_ma_term,
+            ref ConcurrentDictionary<int, List<double>> para_nanpin_timing, ref ConcurrentDictionary<int, List<double>> para_nanpin_lot)
+            {
+                var side = "";
+                if (MarketData.Divergence[para_ma_term[best_id]][i] > 0)
+                    side = "sell";
+                else
+                    side = "buy";
+                var opposite_side = side == "buy" ? "sell" : "buy";
+                var pt = (side == "buy" ? Math.Round(MarketData.Close[i] * para_pt[best_id]) : Math.Round(MarketData.Close[i] * para_pt[best_id]));
+                var lc = (side == "buy" ? Math.Round(MarketData.Close[i] * para_lc[best_id]) : Math.Round(MarketData.Close[i] * para_lc[best_id]));
+                ad.add_action("entry", side, "market", 0, para_nanpin_lot[best_id][0], 0, 0, -1, "entry order"); //first entry
+                for (int j = 0; j < para_nanpin_timing[best_id].Count; j++)
+                    ad.add_action("entry", side, "limit", side == "buy" ? Math.Round(MarketData.Close[i] - MarketData.Close[i] * para_nanpin_timing[best_id][j]) : Math.Round(MarketData.Close[i] + MarketData.Close[i] * para_nanpin_timing[best_id][j]), para_nanpin_lot[best_id][j + 1], 0, 0, 0, "nanpin entry");
+                ad.add_action("ptlc", opposite_side, "", 0, 0, pt, lc, -1, "pt lc order"); //pt lc order
+                return ad;
+            }
+
+            return (ad, best_id, strategy_aplied_point);
+        }
+
 
     }
 }

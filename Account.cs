@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Numerics;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace BTCSIM2
         public double initial_capital { get; set; }
         public List<double> total_pl_list { get; set; }
         public List<double> realized_pl_list { get; set; }
-        public List<double> total_capital_list { get; set; }
+        public SortedDictionary<int, double> total_capital_list { get; set; }
         public double total_capital_sd { get; set; }
         public List<double> buy_pl_list { get; set; }
         public List<double> sell_pl_list { get; set; }
@@ -58,7 +59,7 @@ namespace BTCSIM2
             realized_pl = 0.0;
             total_pl_list = new List<double>();
             realized_pl_list = new List<double>();
-            total_capital_list = new List<double>();
+            total_capital_list = new SortedDictionary<int, double>();
             total_capital_sd = 0.0;
             buy_pl_list = new List<double>();
             sell_pl_list = new List<double>();
@@ -338,6 +339,7 @@ namespace BTCSIM2
         public double max_lev_total_amount = 0.0; //maximum position size in leveraged trading
         public bool silent_mode = false; //true: do not display message, use for opt nanpin and etc.
         public bool stop_sim = false; //true when stop sim trigger was hit (i.e. minimal capital requirement)
+        public Dictionary<string, dynamic> passsing_info_from_sim; //sim can pass any data using this variance.
 
         public int start_ind = 0;
         public int end_ind = 0;
@@ -359,6 +361,7 @@ namespace BTCSIM2
             start_ind = 0;
             end_ind = 0;
             silent_mode = silent;
+            passsing_info_from_sim = new Dictionary<string, dynamic>();
             if (leveraged_or_fixed_amount == "leveraged")
                 leveraged_or_fixed_amount_trading = leveraged_or_fixed_amount;
             else if (leveraged_or_fixed_amount == "fixed")
@@ -374,11 +377,12 @@ namespace BTCSIM2
         public void calc_sharp_ratio()
         {
             List<double> change = new List<double>();
-            for (int i = 1; i < performance_data.total_capital_list.Count; i++)
-                if (performance_data.total_capital_list[i-1] > 0)
-                    change.Add( (performance_data.total_capital_list[i] - performance_data.total_capital_list[i-1]) / performance_data.total_capital_list[i - 1]);
+            var data = performance_data.total_capital_list.ToList();
+            for (int i = 1; i < data.Count; i++)
+                if (data[i-1].Value > 0)
+                    change.Add( (data[i].Value - data[i-1].Value) / data[i - 1].Value);
                 else
-                    change.Add(-1.0 * (performance_data.total_capital_list[i] - performance_data.total_capital_list[i - 1]) / performance_data.total_capital_list[i - 1]);
+                    change.Add(-1.0 * (data[i].Value - data[i - 1].Value) / data[i - 1].Value);
             var variance = calcVariance(change);
             var stdv = Math.Sqrt(variance);
             if (stdv != 0)
@@ -393,8 +397,9 @@ namespace BTCSIM2
             var days = (performance_data.total_capital_list.Count-1) / 1440.0;
             performance_data.ave_daily_pl = Math.Round(((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital) / days, 6);
             var change = new List<double>();
-            for (int i = 0; i < performance_data.total_capital_list.Count-1; i++)
-                change.Add((performance_data.total_capital_list[i + 1] - performance_data.total_capital_list[i]) / performance_data.total_capital_list[i]);
+            var data = performance_data.total_capital_list.ToList();
+            for (int i = 0; i < data.Count-1; i++)
+                change.Add((data[i + 1].Value - data[i].Value) / data[i].Value);
             performance_data.daily_pl_sd = Math.Round(Math.Sqrt(calcVariance(change)), 6);
         }
 
@@ -416,9 +421,10 @@ namespace BTCSIM2
         private void calcDDPeriodRatio()
         {
             var grad = 0.0;
-            for (int i = 0; i < performance_data.total_capital_list.Count - 1; i++)
-                grad += performance_data.total_capital_list[i + 1] - performance_data.total_capital_list[i];
-            performance_data.total_capital_gradient = Math.Round(grad / Convert.ToDouble(performance_data.total_capital_list.Count-1), 4);
+            var data = performance_data.total_capital_list.ToList();
+            for (int i = 0; i < data.Count - 1; i++)
+                grad += data[i + 1].Value - data[i].Value;
+            performance_data.total_capital_gradient = Math.Round(grad / Convert.ToDouble(data.Count-1), 4);
         }
 
         private void calcMaxDD()
@@ -431,12 +437,13 @@ namespace BTCSIM2
             */
             var current_max = 0.0;
             var current_dd = 99999.0;
-            for(int i=0; i<performance_data.total_capital_list.Count; i++)
+            var data = performance_data.total_capital_list.ToList();
+            for(int i=0; i<data.Count; i++)
             {
-                if (current_max < performance_data.total_capital_list[i])
-                    current_max = performance_data.total_capital_list[i];
-                if (current_dd > (performance_data.total_capital_list[i] - current_max) / current_max)
-                    current_dd = (performance_data.total_capital_list[i] - current_max)/current_max;
+                if (current_max < data[i].Value)
+                    current_max = data[i].Value;
+                if (current_dd > (data[i].Value - current_max) / current_max)
+                    current_dd = (data[i].Value - current_max) / current_max;
             }
             performance_data.max_dd = current_dd;
         }
@@ -447,11 +454,12 @@ namespace BTCSIM2
             var window_pl_kijun = 0.0;
             var num_below = 0;
             var num_all = 0;
-            for (int i = 0; i < performance_data.total_capital_list.Count; i++)
+            var data = performance_data.total_capital_list.ToList();
+            for (int i = 0; i < data.Count; i++)
             {
-                if (i + window_size < performance_data.total_capital_list.Count)
+                if (i + window_size < data.Count)
                 {
-                    if ((performance_data.total_capital_list[i + window_size] - performance_data.total_capital_list[i]) / performance_data.total_capital_list[i] < window_pl_kijun)
+                    if ((data[i + window_size].Value - data[i].Value) / data[i].Value < window_pl_kijun)
                     {
                         num_below++;
                     }
@@ -476,7 +484,7 @@ namespace BTCSIM2
          * unrealized_pl = (close - entry_price) * size
          * fee = fee_rate * exec_price * size
          */
-        private void calc_performance_data(double close)
+        private void calc_performance_data(double close, int i)
         {
             if (holding_data.holding_side != "")
             {
@@ -493,9 +501,9 @@ namespace BTCSIM2
                 performance_data.total_capital = Math.Round(performance_data.total_pl + performance_data.initial_capital,2);
             }
             performance_data.unrealized_pl_ratio = performance_data.unrealized_pl != 0 ? Math.Round(performance_data.unrealized_pl / (performance_data.total_capital - performance_data.unrealized_pl),4) : 0;
-            performance_data.total_pl_ratio = Math.Round((performance_data.total_capital - performance_data.initial_capital) / performance_data.initial_capital,4);
+            performance_data.total_pl_ratio = Math.Round(performance_data.total_capital / performance_data.initial_capital,4);
             performance_data.unrealized_pl_list.Add(performance_data.unrealized_pl);
-            performance_data.total_capital_list.Add(performance_data.total_capital);
+            performance_data.total_capital_list[i] = performance_data.total_capital;
             performance_data.unrealized_pl_ratio_list.Add(performance_data.unrealized_pl_ratio);
             total_pl_list.Add(performance_data.total_pl);
             total_pl_ratio_list.Add(performance_data.total_pl_ratio);
@@ -558,7 +566,7 @@ namespace BTCSIM2
             check_execution(i);
             holding_data.holding_period = holding_data.holding_initial_i > 0 ? i - holding_data.holding_initial_i : 0;
             holding_data.holding_volume = holding_data.holding_side != "" ? holding_data.holding_size * MarketData.Close[i] : 0;
-            calc_performance_data(MarketData.Close[i]);
+            calc_performance_data(MarketData.Close[i], i);
             calc_margin_data(i, MarketData.Close[i]);
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
@@ -585,14 +593,14 @@ namespace BTCSIM2
                 holding_data.initialize_holding();
                 performance_data.unrealized_pl = 0;
             }
-            calc_performance_data(close);
+            calc_performance_data(close, i);
             calc_margin_data(i, close);
             calcDailyReturn();
             calcMaxDD();
             calcWindowPLRatio();
             performance_data.max_pl = Math.Round(performance_data.unrealized_pl_ratio_list.Max(), 6);
             performance_data.realized_pl_ratio_sd = Math.Sqrt(calcVariance(performance_data.realized_pl_list));
-            performance_data.total_capital_sd = Math.Sqrt(calcVariance(performance_data.total_capital_list));
+            performance_data.total_capital_sd = Math.Sqrt(calcVariance(performance_data.total_capital_list.Values.ToList()));
             if (performance_data.num_trade > 0)
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
             calc_sharp_ratio();
@@ -633,7 +641,8 @@ namespace BTCSIM2
                         {
                             flg_check_leverage = false;
                             stop_sim = true;
-                            Console.WriteLine("Entry order failed due to over leverage !");
+                            if (silent_mode==false)
+                                Console.WriteLine("Entry order failed due to over leverage !");
                         }
                     }
                 }
@@ -641,12 +650,14 @@ namespace BTCSIM2
                 {
                     flg_check_min_capital = false;
                     stop_sim = true;
-                    Console.WriteLine("Entry order failed due to too small capital !");
+                    if (silent_mode == false)
+                        Console.WriteLine("Entry order failed due to too small capital !");
                 }
                 if (type != "market" && type != "limit" && type != "stop market")
                 {
                     flg_check_order_type = false;
-                    Console.WriteLine("Entry order type should be market or limit !");
+                    if (silent_mode == false)
+                        Console.WriteLine("Entry order type should be market or limit !");
                 }
                 var order_size = 0.0;
                 if (leveraged_or_fixed_amount_trading == "leveraged")
@@ -657,7 +668,8 @@ namespace BTCSIM2
                 {
                     flg_check_order_size = false;
                     stop_sim = true;
-                    Console.WriteLine("Entry order amount is less than the minimal amount !");
+                    if (silent_mode == false)
+                        Console.WriteLine("Entry order amount is less than the minimal amount !");
                 }
 
                 //allow order entry only when all flg cleared or opposite side entry (losscut and etc)
