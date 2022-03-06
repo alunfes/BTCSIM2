@@ -372,6 +372,15 @@ namespace BTCSIM2
             max_lev_total_amount = initial_capital * holding_levarage;
         }
 
+        ~Account()
+        {
+            log_data = new LogData(false);
+            performance_data = new PerformanceData(initial_capital);
+            order_data = new OrderData();
+            holding_data = new HoldingData();
+            total_pl_list = new List<double>();
+            total_pl_ratio_list = new List<double>();
+        }
 
         /*should be called after all sim calc*/
         public void calc_sharp_ratio()
