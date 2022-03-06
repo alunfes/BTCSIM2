@@ -71,7 +71,7 @@ namespace BTCSIM2
 
 
 
-        public void startOptMADivNanpin(int from, int to, bool flg_paralell, string lev_fixed_trading, int num_opt_calc)
+        public void startOptMADivNanpin(int from, int to, string lev_fixed_trading, int num_opt_calc)
         {
             initializer();
             var opt_para_gen = new OptNanpinParaGenerator();
@@ -83,71 +83,67 @@ namespace BTCSIM2
                 var progress = 0.0;
                 var n = 0.0;
                 sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,window pl ratio,pt,lc,num_split,func,ma_term,strategy id,rapid side change ratio,nanpin timing,lot splits");
-                if (flg_paralell)
+                var ac_list = new ConcurrentDictionary<int, Account>();
+                Parallel.For(0, num_opt_calc, i =>
                 {
-                    var ac_list = new ConcurrentDictionary<int, Account>();
-                    Parallel.For(0, num_opt_calc, i =>
-                    {
-                        ac_list.TryAdd(i, doSim(ref lev_fixed_trading,
-                            opt_para_gen.para_strategy[i],
-                            ref from,
-                            ref to,
-                            opt_para_gen.para_pt[i],
-                            opt_para_gen.para_lc[i],
-                            opt_para_gen.para_nanpin_timing[i],
-                            opt_para_gen.para_nanpin_lot[i],
-                            opt_para_gen.para_ma_term[i],
-                            opt_para_gen.para_rapid_side_change_ratio[i]));
-                        res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
-                        res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
-                        res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
-                        res_num_trade.TryAdd(i, ac_list[i].performance_data.num_trade);
-                        res_num_buy.TryAdd(i, ac_list[i].performance_data.num_buy);
-                        res_num_sell.TryAdd(i, ac_list[i].performance_data.num_sell);
-                        if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
-                            res_ave_buy_pl.TryAdd(i, ac_list[i].performance_data.buy_pl_ratio_list.Average());
-                        else
-                            res_ave_buy_pl[i] = 0;
-                        if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
-                            res_ave_sell_pl.TryAdd(i, ac_list[i].performance_data.sell_pl_ratio_list.Average());
-                        else
-                            res_ave_sell_pl.TryAdd(i, 0);
-                        res_realized_pl_sd.TryAdd(i,ac_list[i].performance_data.realized_pl_ratio_sd);
-                        res_total_capital_sd.TryAdd(i, ac_list[i].performance_data.total_capital_sd);
-                        res_window_pl_ratio.TryAdd(i, ac_list[i].performance_data.window_pl_ratio);
-                        res_write_contents.TryAdd(i, i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
-                        ac_list[i].performance_data.win_rate.ToString() + "," +
-                        ac_list[i].performance_data.total_pl.ToString() + "," +
-                        ac_list[i].performance_data.realized_pl.ToString() + "," +
-                        ac_list[i].performance_data.realized_pl_ratio_sd.ToString() + "," +
-                        ac_list[i].performance_data.total_capital_sd.ToString() + "," +
-                        ac_list[i].performance_data.sharp_ratio.ToString() + "," +
-                        ac_list[i].performance_data.total_capital_gradient.ToString() + "," +
-                        ac_list[i].performance_data.window_pl_ratio.ToString() + "," +
-                        opt_para_gen.para_pt[i].ToString() + "," +
-                        opt_para_gen.para_lc[i].ToString() + "," +
-                        opt_para_gen.para_num_split[i].ToString() + "," +
-                        opt_para_gen.para_func[i].ToString() + "," +
-                        opt_para_gen.para_ma_term[i].ToString() + "," +
-                        opt_para_gen.para_strategy[i].ToString() +","+
-                        opt_para_gen.para_rapid_side_change_ratio[i].ToString()+","+
-                        string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
-                        string.Join(":",opt_para_gen.para_nanpin_lot[i]));
-                        sw.WriteLine(res_write_contents[i]);
-                        n++;
-                        progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
-                        Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
-                            ": pl ratio="+ ac_list[i].performance_data.total_pl_ratio.ToString() +
-                            ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
-                            ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
-                        ac_list.TryRemove(i, out var d);
-                        res_write_contents.TryRemove(i, out var dd);
-                    });
-                }
-                else
-                {
-                    //randomly select param combination from list
-                }
+                    ac_list.TryAdd(i, doSim(ref lev_fixed_trading,
+                        opt_para_gen.para_strategy[i],
+                        ref from,
+                        ref to,
+                        opt_para_gen.para_pt[i],
+                        opt_para_gen.para_lc[i],
+                        opt_para_gen.para_nanpin_timing[i],
+                        opt_para_gen.para_nanpin_lot[i],
+                        opt_para_gen.para_ma_term[i],
+                        opt_para_gen.para_rapid_side_change_ratio[i]));
+                    res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
+                    res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
+                    res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
+                    res_num_trade.TryAdd(i, ac_list[i].performance_data.num_trade);
+                    res_num_buy.TryAdd(i, ac_list[i].performance_data.num_buy);
+                    res_num_sell.TryAdd(i, ac_list[i].performance_data.num_sell);
+                    if (ac_list[i].performance_data.buy_pl_ratio_list.Count > 0)
+                        res_ave_buy_pl.TryAdd(i, ac_list[i].performance_data.buy_pl_ratio_list.Average());
+                    else
+                        res_ave_buy_pl[i] = 0;
+                    if (ac_list[i].performance_data.sell_pl_ratio_list.Count > 0)
+                        res_ave_sell_pl.TryAdd(i, ac_list[i].performance_data.sell_pl_ratio_list.Average());
+                    else
+                        res_ave_sell_pl.TryAdd(i, 0);
+                    res_realized_pl_sd.TryAdd(i,ac_list[i].performance_data.realized_pl_ratio_sd);
+                    res_total_capital_sd.TryAdd(i, ac_list[i].performance_data.total_capital_sd);
+                    res_window_pl_ratio.TryAdd(i, ac_list[i].performance_data.window_pl_ratio);
+                    res_write_contents.TryAdd(i, i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
+                    ac_list[i].performance_data.win_rate.ToString() + "," +
+                    ac_list[i].performance_data.total_pl.ToString() + "," +
+                    ac_list[i].performance_data.realized_pl.ToString() + "," +
+                    ac_list[i].performance_data.realized_pl_ratio_sd.ToString() + "," +
+                    ac_list[i].performance_data.total_capital_sd.ToString() + "," +
+                    ac_list[i].performance_data.sharp_ratio.ToString() + "," +
+                    ac_list[i].performance_data.total_capital_gradient.ToString() + "," +
+                    ac_list[i].performance_data.window_pl_ratio.ToString() + "," +
+                    opt_para_gen.para_pt[i].ToString() + "," +
+                    opt_para_gen.para_lc[i].ToString() + "," +
+                    opt_para_gen.para_num_split[i].ToString() + "," +
+                    opt_para_gen.para_func[i].ToString() + "," +
+                    opt_para_gen.para_ma_term[i].ToString() + "," +
+                    opt_para_gen.para_strategy[i].ToString() +","+
+                    opt_para_gen.para_rapid_side_change_ratio[i].ToString()+","+
+                    string.Join(":",opt_para_gen.para_nanpin_timing[i]) + "," +
+                    string.Join(":",opt_para_gen.para_nanpin_lot[i]));
+                    sw.WriteLine(res_write_contents[i]);
+                    n++;
+                    progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
+                    Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
+                        ": pl ratio="+ ac_list[i].performance_data.total_pl_ratio.ToString() +
+                        ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
+                        ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
+
+                    while (ac_list.TryRemove(i, out var d) == false) ;
+                    while (res_write_contents.TryRemove(i, out var dd)) ;
+                    //ac_list.TryRemove(i, out var d);
+                    //res_write_contents.TryRemove(i, out var dd);
+                });
             }
         }
 

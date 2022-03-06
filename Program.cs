@@ -205,7 +205,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("optimize nanpin strategy parameter");
                 var o = new OptNanpin();
-                o.startOptMADivNanpin(from, to, true, leveraged_or_fixed_trading, num_opt_calc);
+                o.startOptMADivNanpin(from, to, leveraged_or_fixed_trading, num_opt_calc);
             }
             else if (key == "4")
             {
@@ -441,7 +441,44 @@ namespace BTCSIM2
             }
             else if (key == "14")
             {
+                Console.WriteLine("Please input opt strategy id for test.");
+                var d = Console.ReadLine();
+                var opt_ind = 0;
+                if (int.TryParse(d, out opt_ind) == false)
+                    Console.WriteLine("invalid input !");
+                else
+                {
+                    double pt, lc, rapid_side;
+                    List<double> nanpin_timing, nanpin_lot;
+                    int strategy, ma_term;
 
+                    var rs = new ReadSelectSim();
+                    var ind_list = rs.generateBestPlIndList(num_opt_calc);
+                    using (var sr = new StreamReader("opt nanpin selext.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        for (int i = 0; i < ind_list[opt_ind]; i++)
+                            sr.ReadLine();
+                        data = sr.ReadLine();
+                        var ele = data.Split(',');
+                        pt = Convert.ToDouble(ele[10]);
+                        lc = Convert.ToDouble(ele[11]);
+                        ma_term = Convert.ToInt32(ele[14]);
+                        strategy = Convert.ToInt32(ele[15]);
+                        rapid_side = Convert.ToDouble(ele[16]);
+                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
+                        Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
+
+                    }
+                    var ac = new Account(leveraged_or_fixed_trading, false);
+                    var sim = new Sim();
+                    if (strategy == 0)
+                        ac = sim.sim_madiv_nanpin_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, true);
+                    else
+                        ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side);
+                    displaySimResult(ac, "Opt select sim");
+                }
             }
         }
     }

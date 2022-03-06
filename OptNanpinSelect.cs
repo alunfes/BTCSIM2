@@ -104,6 +104,7 @@ namespace BTCSIM2
                 sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,window pl ratio,num select change," +
                     "timing time window,timing pre time window,strategy time window,timing subordinate ratio");
                 var ac_list = new ConcurrentDictionary<int, Account>();
+
                 Parallel.For(0, num_opt, i =>
                 {
                     ac_list.TryAdd(i, doSelectSim(ref lev_or_fixed, from, to, strategy_ac_list, para_pt, para_lc, para_ma_term, para_strategy, para_rapid_side_change_ratio,
