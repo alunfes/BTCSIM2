@@ -38,8 +38,35 @@ namespace BTCSIM2
             para_rapid_side_change_ratio = new ConcurrentDictionary<int, double>();
         }
 
+        public void generateParametersAllPriceNanpin(double min_pt, double max_pt, double min_lc, double max_lc, int num_select_params)
+        {
+            initializer();
+            var pt = generatePtList(min_pt, max_pt);
+            var lc = generateLcList(min_lc, max_lc);
+            var ma_term = generateMATerm(MarketData.terms);
+            var strategy = generateStrategy();
+            var rapid_side = generateRapidSideChange();
 
-        public void generateParameters(double min_pt, double max_pt, double min_lc, double max_lc, int max_split, int num_select_params)
+            var ran = new Random();
+            for (int i=0; i<num_select_params; i++)
+            {
+                para_pt.TryAdd(i, pt[ran.Next(0, pt.Count)]);                
+                para_func.TryAdd(i, -1);
+                para_num_split.TryAdd(i, 49);
+                para_ma_term.TryAdd(i, ma_term[ran.Next(0, ma_term.Count)]);
+                para_strategy.TryAdd(i, strategy[ran.Next(0, strategy.Count)]);
+                para_rapid_side_change_ratio.TryAdd(i, rapid_side[ran.Next(0, rapid_side.Count)]);
+                var lc_d = lc[ran.Next(0, lc.Count)];
+                para_lc.TryAdd(i, lc_d);
+                var lot_timing = getAllPriceNanpinParam(lc_d);
+                para_nanpin_timing.TryAdd(i, lot_timing[0][0].ToList());
+                para_nanpin_lot.TryAdd(i, lot_timing[0][1].ToList());
+            }
+        }
+
+
+
+            public void generateParameters(double min_pt, double max_pt, double min_lc, double max_lc, int max_split, int num_select_params)
         {
             initializer();
             var func = new List<int>() { 0, 1, 2 };
@@ -179,6 +206,25 @@ namespace BTCSIM2
                 true_res.TryAdd(i, res[reskeys[i]]);
             return true_res;
         }
+
+
+        //place 50 nanapin orders as fixed till lc price
+        public ConcurrentDictionary<int, List<double[]>> getAllPriceNanpinParam(double lc)
+        {
+            var nanpin_lots = new ConcurrentDictionary<int, List<double[]>>(); //napin lot name, nanpin timing, lot splilit
+            var minlot = 0.001;
+            var skip = (lc - minlot) / 50.0;
+            var lot = Math.Round(1.0 / 50.0, 4);
+            var timing = new List<double>();
+            var lots = new List<double>();
+            for (int i=0; i<50; i++)
+                lots.Add(lot);
+            for (int i = 0; i < 49; i++)
+                timing.Add((i+1) * skip);
+            nanpin_lots.TryAdd(0, new List<double[]> { timing.ToArray(), lots.ToArray() });
+            return nanpin_lots;
+        }
+
 
         /*
          * 関数は同値分割（total_size / num）、x%ずつlotを上げる、x%ずつlotを下げるから選択する。

@@ -75,7 +75,8 @@ namespace BTCSIM2
         {
             initializer();
             var opt_para_gen = new OptNanpinParaGenerator();
-            opt_para_gen.generateParameters(0.005, 0.1, 0.005, 0.1, 15, num_opt_calc);
+            //opt_para_gen.generateParameters(0.005, 0.1, 0.005, 0.1, 15, num_opt_calc);
+            opt_para_gen.generateParametersAllPriceNanpin(0.005, 0.1, 0.005, 0.1, num_opt_calc);
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
