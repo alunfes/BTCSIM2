@@ -82,10 +82,68 @@ namespace BTCSIM2
             return ac;
         }
 
+        public Account conti_sim_madiv_nanpin_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, bool flg_contrarian)
+        {
+            if (ac.order_data.getNumOrders() > 0)
+                ac.cancel_all_order(from, MarketData.Dt[from].ToString());
+            if (ac.holding_data.holding_side != "")
+                ac.entry_order("market", ac.holding_data.holding_side == "buy" ? "sell" : "buy", ac.holding_data.holding_size, 0, from, MarketData.Dt[from].ToString(), "exit order as srategy has been updated.");
+            ac.move_to_next(from + 1);
+
+            var strategy = new Strategy();
+            for (int i = from+1; i < to - 1; i++)
+            {
+                var actions = strategy.NanpinPtlcMADivStrategy(i, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, flg_contrarian, ac);
+                for (int j = 0; j < actions.action.Count; j++)
+                {
+                    if (actions.action[j] == "entry")
+                        ac.entry_order(actions.order_type[j], actions.order_side[j], actions.order_size[j], actions.order_price[j], i, MarketData.Dt[i].ToString(), actions.order_message[j]);
+                    else if (actions.action[j] == "cancel")
+                        ac.cancel_all_order(i, MarketData.Dt[i].ToString());
+                    else if (actions.action[j] == "ptlc")
+                        ac.entry_ptlc(actions.pt_price, actions.lc_price);
+                }
+                ac.move_to_next(i + 1);
+            }
+            ac.last_day(to, MarketData.Close[to]);
+            ac.calc_sharp_ratio();
+            return ac;
+        }
+
         public Account sim_madiv_nanpin_rapid_side_change_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, ref double rapid_side_change_ratio)
         {
             var strategy = new Strategy();
             for (int i = from; i < to - 1; i++)
+            {
+                var actions = strategy.NanpinPtlcMADivRapidSideChangeStrategy(i, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, rapid_side_change_ratio, ac);
+                for (int j = 0; j < actions.action.Count; j++)
+                {
+                    if (actions.action[j] == "entry")
+                        ac.entry_order(actions.order_type[j], actions.order_side[j], actions.order_size[j], actions.order_price[j], i, MarketData.Dt[i].ToString(), actions.order_message[j]);
+                    else if (actions.action[j] == "cancel")
+                        ac.cancel_all_order(i, MarketData.Dt[i].ToString());
+                    else if (actions.action[j] == "ptlc")
+                        ac.entry_ptlc(actions.pt_price, actions.lc_price);
+                }
+                ac.move_to_next(i + 1);
+            }
+            ac.last_day(to, MarketData.Close[to]);
+            ac.calc_sharp_ratio();
+            return ac;
+        }
+
+
+        public Account conti_sim_madiv_nanpin_rapid_side_change_ptlc(ref int from, ref int to, Account ac, ref double pt_ratio, ref double lc_ratio, ref List<double> nanpin_timing, ref List<double> lot_splits, ref int ma_term, ref double rapid_side_change_ratio)
+        {
+            if (ac.order_data.getNumOrders() > 0)
+                ac.cancel_all_order(from, MarketData.Dt[from].ToString());
+            if (ac.holding_data.holding_side != "")
+                ac.entry_order("market", ac.holding_data.holding_side == "buy" ? "sell" : "buy", ac.holding_data.holding_size, 0, from, MarketData.Dt[from].ToString(), "exit order as srategy has been updated.");
+            ac.move_to_next(from + 1);
+
+
+            var strategy = new Strategy();
+            for (int i = from+1; i < to - 1; i++)
             {
                 var actions = strategy.NanpinPtlcMADivRapidSideChangeStrategy(i, pt_ratio, lc_ratio, nanpin_timing, lot_splits, ma_term, rapid_side_change_ratio, ac);
                 for (int j = 0; j < actions.action.Count; j++)

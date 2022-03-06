@@ -67,9 +67,10 @@ namespace BTCSIM2
                 Console.WriteLine("\"12: opt filtering select\" : Select opt filtering id in best opt pl order");
                 Console.WriteLine("\"13: opt select strategy\" : Optimize strategy selection rule");
                 Console.WriteLine("\"14: opt select select\" : Select select strategy id in bes opt pl order");
+                Console.WriteLine("\"15: Conti Opt Sim\" : Conti Opt Sim");
                 key = Console.ReadLine();
 
-                if (Convert.ToInt32(key) >= 0 && Convert.ToInt32(key) <= 14)
+                if (Convert.ToInt32(key) >= 0 && Convert.ToInt32(key) <= 15)
                     break;
             }
             Stopwatch stopWatch = new Stopwatch();
@@ -479,6 +480,64 @@ namespace BTCSIM2
                         ac = sim.sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side);
                     displaySimResult(ac, "Opt select sim");
                 }
+            }
+            else if (key == "15")
+            {
+                Console.WriteLine("Conti Opt Nanpin Sim");
+
+                var train_term = 500000;
+                var sim_term = 200000;
+                var ac = new Account(leveraged_or_fixed_trading, false);
+                var current_from = 1000;
+                var current_to = current_from + train_term;
+                var num = 50;
+
+                double pt, lc, rapid_side_change_ratio;
+                int ma_term, strategy_id;
+                List<double> nanpin_lot, nanpin_timing;
+                while(true)
+                {
+                    var o = new OptNanpin();
+                    o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num);
+                    readOptData(0);
+                    ac = dosim(current_to, current_to + sim_term, ac);
+                    current_from = current_to +sim_term - train_term;
+                    current_to = current_from + train_term;
+                    if (current_from + train_term >= MarketData.Close.Count - 1)
+                        break;
+                    if (current_to + sim_term >= MarketData.Close.Count-1)
+                        current_to = MarketData.Close.Count - 1 - sim_term;
+                }
+
+                void readOptData(int opt_ind)
+                {
+                    var rs = new ReadSim();
+                    var ind_list = rs.generateBestPlIndList(num_opt_calc);
+                    using (var sr = new StreamReader("opt nanpin.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        for (int i = 0; i < ind_list[opt_ind]; i++)
+                            sr.ReadLine();
+                        data = sr.ReadLine();
+                        var ele = data.Split(',');
+                        pt = Convert.ToDouble(ele[10]);
+                        lc = Convert.ToDouble(ele[11]);
+                        ma_term = Convert.ToInt32(ele[14]);
+                        strategy_id = Convert.ToInt32(ele[15]);
+                        rapid_side_change_ratio = Convert.ToDouble(ele[16]);
+                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
+                    }
+                }
+                Account dosim(int from, int to, Account ac)
+                {
+                    var sim = new Sim();
+                    if (strategy_id == 0)
+                        return sim.conti_sim_madiv_nanpin_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, true);
+                    else
+                        return sim.conti_sim_madiv_nanpin_rapid_side_change_ptlc(ref from, ref to, ac, ref pt, ref lc, ref nanpin_timing, ref nanpin_lot, ref ma_term, ref rapid_side_change_ratio);
+                }
+                displaySimResult(ac, "Conti Opt Nnapin sim");
             }
         }
     }
