@@ -147,7 +147,8 @@ namespace BTCSIM2
                     Console.WriteLine(n.ToString() + "/" + num_opt.ToString() + " - " + progress.ToString() + "%" +
                         ": pl ratio=" + ac_list[i].performance_data.total_pl_ratio.ToString() +
                         ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
-                        ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
+                        ", win rate=" + ac_list[i].performance_data.win_rate.ToString() +
+                        ", num strategy change=" + Convert.ToString(ac_list[i].passsing_info_from_sim["num select change"]));
                     ac_list.TryRemove(i, out var d);
                     res_write_contents.TryRemove(i, out var dd);
                 });
