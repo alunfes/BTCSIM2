@@ -485,10 +485,10 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Conti Opt Nanpin Sim");
 
-                var train_term = 500000;
-                var sim_term = 200000;
+                var train_term = 200000;
+                var sim_term = 100000;
                 var ac = new Account(leveraged_or_fixed_trading, false);
-                var current_from = 1000;
+                var current_from = 1000000;
                 var current_to = current_from + train_term;
                 var num = 50;
 
@@ -501,16 +501,15 @@ namespace BTCSIM2
                     var o = new OptNanpin();
                     o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num);
                     readOptData(0);
-                    ac = dosim(current_to, current_to + sim_term, ac);
+                    var sim_to = current_to + sim_term < MarketData.Close.Count - 1 ? current_to + sim_term : MarketData.Close.Count - 1;
+                    ac = dosim(current_to, sim_to, ac);
                     Console.WriteLine("Loop No.=" + num_loop);
-                    Console.WriteLine("sim from="+current_to +", sim to="+ current_to + sim_term);
+                    Console.WriteLine("sim from="+current_to +", sim to="+ (current_to + sim_term).ToString());
                     Console.WriteLine("Current total pl="+ac.performance_data.total_pl+", num trade"+ac.performance_data.num_trade);
                     current_from = current_to +sim_term - train_term;
                     current_to = current_from + train_term;
                     if (current_from + train_term >= MarketData.Close.Count - 1)
                         break;
-                    if (current_to + sim_term >= MarketData.Close.Count-1)
-                        current_to = MarketData.Close.Count - 1 - sim_term;
                     num_loop++;
                 }
 
