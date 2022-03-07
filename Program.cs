@@ -495,18 +495,23 @@ namespace BTCSIM2
                 double pt, lc, rapid_side_change_ratio;
                 int ma_term, strategy_id;
                 List<double> nanpin_lot, nanpin_timing;
+                var num_loop = 0;
                 while(true)
                 {
                     var o = new OptNanpin();
                     o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num);
                     readOptData(0);
                     ac = dosim(current_to, current_to + sim_term, ac);
+                    Console.WriteLine("Loop No.=" + num_loop);
+                    Console.WriteLine("sim from="+current_to +", sim to="+ current_to + sim_term);
+                    Console.WriteLine("Current total pl="+ac.performance_data.total_pl+", num trade"+ac.performance_data.num_trade);
                     current_from = current_to +sim_term - train_term;
                     current_to = current_from + train_term;
                     if (current_from + train_term >= MarketData.Close.Count - 1)
                         break;
                     if (current_to + sim_term >= MarketData.Close.Count-1)
                         current_to = MarketData.Close.Count - 1 - sim_term;
+                    num_loop++;
                 }
 
                 void readOptData(int opt_ind)
