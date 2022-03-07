@@ -78,9 +78,9 @@ namespace BTCSIM2
         }
 
         //from should be higher than 10000
-        public void startOptNanpinSelect(int from, int to, int num_opt, string lev_or_fixed)
+        public void startOptNanpinSelect(int from, int to, int num_select_strategies, int num_opt, string lev_or_fixed)
         {
-            readStrategyData();
+            readStrategyData(num_select_strategies);
             select_timing_time_window = generateTimingWindow();
             select_timing_pre_time_window = generateTimingWindow();
             select_strategy_time_window = generateTimingWindow();
@@ -154,24 +154,31 @@ namespace BTCSIM2
             }
         }
 
-        private void readStrategyData()
+        private void readStrategyData(int num_select_strategies)
         {
             var rs = new ReadSim();
-            using (var sr = new StreamReader("nanpin select.csv"))
+            var selected_ind = rs.generateBestPlIndList(num_select_strategies);
+            using (var sr = new StreamReader("opt nanpin.csv"))
             {
                 var data = sr.ReadLine();
-                var i = 0;
+                int no = 0;
+                int target_no = 0;
                 while ((data = sr.ReadLine()) != null)
                 {
-                    var ele = data.Split(',');
-                    para_pt.TryAdd(i, Convert.ToDouble(ele[0]));
-                    para_lc.TryAdd(i, Convert.ToDouble(ele[1]));
-                    para_ma_term.TryAdd(i, Convert.ToInt32(ele[2]));
-                    para_strategy.TryAdd(i, Convert.ToInt32(ele[3]));
-                    para_rapid_side_change_ratio.TryAdd(i, Convert.ToDouble(ele[4]));
-                    para_nanpin_timing.TryAdd(i, ele[5].Split(':').Select(double.Parse).ToArray().ToList());
-                    para_nanpin_lot.TryAdd(i, ele[6].Split(':').Select(double.Parse).ToArray().ToList());
-                    i++;
+                    if (selected_ind.Contains(no))
+                    {
+                        var ele = data.Split(',');
+                        //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,window pl ratio,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits"
+                        para_pt[target_no] = Convert.ToDouble(ele[10]);
+                        para_lc[target_no] = Convert.ToDouble(ele[11]);
+                        para_ma_term[target_no] = Convert.ToInt32(ele[14]);
+                        para_strategy[target_no] = Convert.ToInt32(ele[15]);
+                        para_rapid_side_change_ratio[target_no] = Convert.ToDouble(ele[16]);
+                        para_nanpin_timing[target_no] = ele[17].Split(':').Select(double.Parse).ToArray().ToList();
+                        para_nanpin_lot[target_no] = ele[18].Split(':').Select(double.Parse).ToArray().ToList();
+                        target_no++;
+                    }
+                    no++;
                 }
             }
         }

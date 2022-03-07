@@ -81,10 +81,10 @@ namespace BTCSIM2
             //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
             MarketData.initializer(terms);
 
-            var from = 11000;
+            var from = 510000;
             //var from = MarketData.Close.Count - 100000;
-            //var to = 600000;
-            var to = MarketData.Close.Count - 100000;
+            //var to = 500000;
+            var to = MarketData.Close.Count - 200000;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 100;
@@ -438,7 +438,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Start optimize strategy select rule");
                 var optselect = new OptNanpinSelect();
-                optselect.startOptNanpinSelect(from, to, 100, leveraged_or_fixed_trading);
+                optselect.startOptNanpinSelect(from, to, 5, 100, leveraged_or_fixed_trading);
             }
             else if (key == "14")
             {
@@ -504,13 +504,18 @@ namespace BTCSIM2
                     var sim_to = current_to + sim_term < MarketData.Close.Count - 1 ? current_to + sim_term : MarketData.Close.Count - 1;
                     ac = dosim(current_to, sim_to, ac);
                     Console.WriteLine("Loop No.=" + num_loop);
-                    Console.WriteLine("sim from="+current_to +", sim to="+ (current_to + sim_term).ToString());
+                    Console.WriteLine("sim from="+current_to +", sim to="+ sim_to);
                     Console.WriteLine("Current total pl="+ac.performance_data.total_pl+", num trade"+ac.performance_data.num_trade);
                     current_from = current_to +sim_term - train_term;
                     current_to = current_from + train_term;
                     if (current_from + train_term >= MarketData.Close.Count - 1)
                         break;
                     num_loop++;
+                    if (ac.stop_sim)
+                    {
+                        ac = dosim(current_to, MarketData.Close.Count - 1, ac);
+                        break;
+                    }
                 }
 
                 void readOptData(int opt_ind)
