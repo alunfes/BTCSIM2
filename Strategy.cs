@@ -397,15 +397,20 @@ namespace BTCSIM2
              */
             bool checkPerformance(int i, int current_selected_strategy, int strategy_aplied_point, List<Account> strategy_ac_list, ref int select_time_window, ref int pre_time_window, ref double subordinate_ratio)
             {
-                var select_current_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i];
-                var select_pre_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i - select_time_window];
-                var select_ave_pl = (select_current_total_capital - select_pre_total_capital) / Convert.ToDouble(select_time_window);
-                var applied_current_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point];
-                var applied_pre_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point - pre_time_window];
-                var applied_ave_pl = (applied_current_capital - applied_pre_capital) / Convert.ToDouble(pre_time_window);
+                if (i - strategy_aplied_point >= select_time_window)
+                {
+                    var select_current_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i];
+                    var select_pre_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i - select_time_window];
+                    var select_ave_pl = (select_current_total_capital - select_pre_total_capital) / Convert.ToDouble(select_time_window);
+                    var applied_current_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point];
+                    var applied_pre_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point - pre_time_window];
+                    var applied_ave_pl = (applied_current_capital - applied_pre_capital) / Convert.ToDouble(pre_time_window);
 
-                if (select_ave_pl <= applied_ave_pl * (1.0 - subordinate_ratio))
-                    return true;
+                    if (select_ave_pl <= applied_ave_pl * (1.0 - subordinate_ratio))
+                        return true;
+                    else
+                        return false;
+                }
                 else
                     return false;
             }
