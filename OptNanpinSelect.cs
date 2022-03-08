@@ -62,7 +62,7 @@ namespace BTCSIM2
             para_nanpin_lot = new ConcurrentDictionary<int, List<double>>();
 
             select_timing_time_window = new ConcurrentDictionary<int, int>();
-            select_timing_pre_time_window = new ConcurrentDictionary<int, int>();
+            //select_timing_pre_time_window = new ConcurrentDictionary<int, int>();
             select_timing_subordinate_ratio = new ConcurrentDictionary<int, double>();
             select_strategy_time_window = new ConcurrentDictionary<int, int>();
         }
@@ -78,14 +78,14 @@ namespace BTCSIM2
         }
 
         //from should be higher than 10000
-        public void startOptNanpinSelect(int from, int to, int num_select_strategies, int num_opt, string lev_or_fixed)
+        public void startOptNanpinSelect(int from, int to, List<int> select_strategy_ids, int num_opt, string lev_or_fixed)
         {
-            readStrategyData(num_select_strategies);
+            readStrategyData(select_strategy_ids);
             select_timing_time_window = generateTimingWindow();
-            select_timing_pre_time_window = generateTimingWindow();
+            //select_timing_pre_time_window = generateTimingWindow();
             select_strategy_time_window = generateTimingWindow();
             select_timing_subordinate_ratio = generateSubordinateRatio();
-            var selected_param_combination = generateParamIndCombination(num_opt); //[select_timing_time_window, select_timing_pre_time_window, select_timing_subordinate_ratio, select_strategy_time_window]
+            var selected_param_combination = generateParamIndCombination(num_opt); //[select_timing_time_window, select_timing_subordinate_ratio, select_strategy_time_window]
 
             /*
              * do sim for all strategies from　i=max ma terms till from.
@@ -102,14 +102,14 @@ namespace BTCSIM2
                 var progress = 0.0;
                 var n = 0.0;
                 sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,window pl ratio,num select change," +
-                    "timing time window,timing pre time window,strategy time window,timing subordinate ratio");
+                    "timing time window,strategy time window,timing subordinate ratio");
                 var ac_list = new ConcurrentDictionary<int, Account>();
 
                 Parallel.For(0, num_opt, i =>
                 {
                     ac_list.TryAdd(i, doSelectSim(ref lev_or_fixed, from, to, strategy_ac_list, para_pt, para_lc, para_ma_term, para_strategy, para_rapid_side_change_ratio,
-                        para_nanpin_timing, para_nanpin_lot, select_timing_time_window[selected_param_combination[i][0]], select_timing_pre_time_window[selected_param_combination[i][1]],
-                        select_strategy_time_window[selected_param_combination[i][3]], select_timing_subordinate_ratio[selected_param_combination[i][2]]));
+                        para_nanpin_timing, para_nanpin_lot, select_timing_time_window[selected_param_combination[i][0]],
+                        select_strategy_time_window[selected_param_combination[i][2]], select_timing_subordinate_ratio[selected_param_combination[i][1]]));
                     res_total_capital.TryAdd(i, ac_list[i].performance_data.total_capital);
                     res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
                     res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
@@ -138,7 +138,7 @@ namespace BTCSIM2
                     ac_list[i].performance_data.window_pl_ratio.ToString() + "," +
                     Convert.ToString(ac_list[i].passsing_info_from_sim["num select change"]) + "," +
                     select_timing_time_window[selected_param_combination[i][0]].ToString() + "," +
-                    select_timing_pre_time_window[selected_param_combination[i][1]].ToString() + "," +
+                    //select_timing_pre_time_window[selected_param_combination[i][1]].ToString() + "," +
                     select_strategy_time_window[selected_param_combination[i][3]].ToString() + "," +
                     select_timing_subordinate_ratio[selected_param_combination[i][2]].ToString());
                     sw.WriteLine(res_write_contents[i]);
@@ -148,6 +148,7 @@ namespace BTCSIM2
                         ": pl ratio=" + ac_list[i].performance_data.total_pl_ratio.ToString() +
                         ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
                         ", win rate=" + ac_list[i].performance_data.win_rate.ToString() +
+                        ", num trade=" + ac_list[i].performance_data.num_trade.ToString() +
                         ", num strategy change=" + Convert.ToString(ac_list[i].passsing_info_from_sim["num select change"]));
                     ac_list.TryRemove(i, out var d);
                     res_write_contents.TryRemove(i, out var dd);
@@ -155,10 +156,10 @@ namespace BTCSIM2
             }
         }
 
-        private void readStrategyData(int num_select_strategies)
+        private void readStrategyData(List<int> select_strategy_ids)
         {
             var rs = new ReadSim();
-            var selected_ind = rs.generateBestPlIndList(num_select_strategies);
+            var selected_strategy_file_ind = getOptNanpinPLOrder(select_strategy_ids);
             using (var sr = new StreamReader("opt nanpin.csv"))
             {
                 var data = sr.ReadLine();
@@ -166,7 +167,7 @@ namespace BTCSIM2
                 int target_no = 0;
                 while ((data = sr.ReadLine()) != null)
                 {
-                    if (selected_ind.Contains(no))
+                    if (selected_strategy_file_ind.Values.Contains(no))
                     {
                         var ele = data.Split(',');
                         //"No.,num trade,win rate,total pl,realized pl,realzied pl var,total capital var,sharp ratio,total capital gradient,window pl ratio,pt,lc,num_split,func,ma_term,strategy id,nanpin timing,lot splits"
@@ -183,6 +184,35 @@ namespace BTCSIM2
                 }
             }
         }
+
+        //<selected strategy ids, index of matched strategy in opt nanpin.csv>
+        private Dictionary<int, int> getOptNanpinPLOrder(List<int> select_strategy_ids)
+        {
+            var res = new Dictionary<int, int>();
+            var pl = new Dictionary<int, double>();
+            var n = 0;
+            using (var sr = new StreamReader("opt nanpin.csv"))
+            {
+                sr.ReadLine();
+                var data = "";    
+                while ((data = sr.ReadLine()) != null)
+                {
+                    pl[n] = Convert.ToDouble(data.Split(',')[3]);
+                    n++;
+                }
+            }
+            IOrderedEnumerable<KeyValuePair<int, double>> sorted = pl.OrderByDescending(pair => pair.Value);
+            var selected_inds = new List<int>();
+            n = 0;
+            foreach (var data in sorted)
+            {
+                if (select_strategy_ids.Contains(data.Key))
+                    res[data.Key] = n;
+                n++;
+            }
+            return res;
+        }
+
 
         private ConcurrentDictionary<int, int> generateTimingWindow()
         {
@@ -230,7 +260,8 @@ namespace BTCSIM2
             var ran = new Random();
             for (int i = 0; i < num; i++)
             {
-                var ind_combi = new List<int> { ran.Next(0, select_timing_time_window.Count), ran.Next(0, select_timing_pre_time_window.Count), ran.Next(0, select_timing_subordinate_ratio.Count), ran.Next(0, select_strategy_time_window.Count)};
+                //var ind_combi = new List<int> { ran.Next(0, select_timing_time_window.Count), ran.Next(0, select_timing_pre_time_window.Count), ran.Next(0, select_timing_subordinate_ratio.Count), ran.Next(0, select_strategy_time_window.Count)};
+                var ind_combi = new List<int> { ran.Next(0, select_timing_time_window.Count), ran.Next(0, select_timing_subordinate_ratio.Count), ran.Next(0, select_strategy_time_window.Count) };
                 res.TryAdd(i, ind_combi);
             }
             return res;
@@ -254,14 +285,12 @@ namespace BTCSIM2
         private Account doSelectSim(ref string lev_or_fixed, int from, int to, List<Account> strategy_ac_list, ConcurrentDictionary<int, double> para_pt,
             ConcurrentDictionary<int, double> para_lc, ConcurrentDictionary<int, int> para_ma_term, ConcurrentDictionary<int, int> para_strategy_id,
             ConcurrentDictionary<int, double> para_rapid_side_change_ratio, ConcurrentDictionary<int, List<double>> para_nanpin_timing,
-            ConcurrentDictionary<int, List<double>> para_nanpin_lot, int time_window, int pre_time_window, int strategy_time_window, double subordinate_ratio)
+            ConcurrentDictionary<int, List<double>> para_nanpin_lot, int time_window, int strategy_time_window, double subordinate_ratio)
         {
             var sim = new Sim();
             return sim.sim_select_strategy(from, to, ref strategy_ac_list, new Account(lev_or_fixed, true), ref para_pt, ref para_lc, ref para_ma_term, ref para_strategy_id, ref para_rapid_side_change_ratio, ref para_nanpin_timing, ref para_nanpin_lot,
-                ref time_window, ref pre_time_window, ref strategy_time_window, ref subordinate_ratio);
+                ref time_window, ref strategy_time_window, ref subordinate_ratio);
             
         }
-
-
     }
 }

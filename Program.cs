@@ -88,6 +88,7 @@ namespace BTCSIM2
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 100;
+            var selected_opt_ids = new List<int>() { 0,5,10,15,20};
 
 
             /*
@@ -438,7 +439,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Start optimize strategy select rule");
                 var optselect = new OptNanpinSelect();
-                optselect.startOptNanpinSelect(from, to, 5, 100, leveraged_or_fixed_trading);
+                optselect.startOptNanpinSelect(from, to, selected_opt_ids, 100, leveraged_or_fixed_trading);
             }
             else if (key == "14")
             {
@@ -449,9 +450,9 @@ namespace BTCSIM2
                     Console.WriteLine("invalid input !");
                 else
                 {
-                    double pt, lc, rapid_side;
+                    double pt, lc, rapid_side, select_timing_subordinate_ratio;
                     List<double> nanpin_timing, nanpin_lot;
-                    int strategy, ma_term;
+                    int strategy, ma_term, select_timing_time_window, select_timing_pre_time_window, select_strategy_time_window;
 
                     var rs = new ReadSelectSim();
                     var ind_list = rs.generateBestPlIndList(num_opt_calc);

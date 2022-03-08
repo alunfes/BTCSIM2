@@ -212,7 +212,7 @@ namespace BTCSIM2
         public Account sim_select_strategy(int from, int to, ref List<Account> strategy_ac_list, Account ac, ref ConcurrentDictionary<int, double> para_pt,
             ref ConcurrentDictionary<int, double> para_lc, ref ConcurrentDictionary<int, int> para_ma_term, ref ConcurrentDictionary<int, int> para_strategy_id,
             ref ConcurrentDictionary<int, double> para_rapid_side_change_ratio, ref ConcurrentDictionary<int, List<double>> para_nanpin_timing,
-            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int pre_time_window, ref int strategy_time_window, ref double subordinate_ratio)
+            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int strategy_time_window, ref double subordinate_ratio)
         {
             var strategy = new Strategy();
             var current_selected_strategy_id = -1;
@@ -221,7 +221,7 @@ namespace BTCSIM2
             for(int i=from; i<to-1; i++)
             {
                 var res = strategy.SelectNanpinStrategy(i, current_selected_strategy_id, strategy_applied_point, ref strategy_ac_list, ac, ref para_pt, ref para_lc, ref para_ma_term,
-                    ref para_strategy_id, ref para_rapid_side_change_ratio, ref para_nanpin_timing, ref para_nanpin_lot, ref select_time_window, ref pre_time_window, ref strategy_time_window, ref subordinate_ratio);
+                    ref para_strategy_id, ref para_rapid_side_change_ratio, ref para_nanpin_timing, ref para_nanpin_lot, ref select_time_window, ref strategy_time_window, ref subordinate_ratio);
                 var actions = res.Item1;
                 current_selected_strategy_id = res.Item2;
                 if (strategy_applied_point != res.Item3)

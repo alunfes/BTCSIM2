@@ -318,7 +318,7 @@ namespace BTCSIM2
         public (StrategyActionData, int, int) SelectNanpinStrategy(int i, int current_selected_strategy, int strategy_aplied_point, ref List<Account> strategy_ac_list, Account ac, ref ConcurrentDictionary<int, double> para_pt,
             ref ConcurrentDictionary<int, double> para_lc, ref ConcurrentDictionary<int, int> para_ma_term, ref ConcurrentDictionary<int, int> para_strategy_id,
             ref ConcurrentDictionary<int, double> para_rapid_side_change_ratio, ref ConcurrentDictionary<int, List<double>> para_nanpin_timing,
-            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int pre_time_window, ref int strategy_time_window, ref double subordinate_ratio)
+            ref ConcurrentDictionary<int, List<double>> para_nanpin_lot, ref int select_time_window, ref int strategy_time_window, ref double subordinate_ratio)
         {
             var ad = new StrategyActionData();
             var best_id = current_selected_strategy;
@@ -333,7 +333,7 @@ namespace BTCSIM2
             }
             else
             {
-                var if_change = checkPerformance(i, current_selected_strategy, strategy_aplied_point, strategy_ac_list, ref select_time_window, ref pre_time_window, ref subordinate_ratio);
+                var if_change = checkPerformance(i, ac, strategy_aplied_point, ref select_time_window, ref subordinate_ratio);
                 if (if_change) //change current strategy
                 {
                     best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window);
@@ -399,9 +399,9 @@ namespace BTCSIM2
              * 切り替えタイミング：
              * ->過去x時間(select_time_window)における時間あたりのplが、採用開始前のy時間(pre_time_window)の時間あたりplよりもz％(subordinate_ratio)以上劣後した場合。
              */
-            bool checkPerformance(int i, Account ac, int current_selected_strategy, int strategy_aplied_point, List<Account> strategy_ac_list, ref int select_time_window, ref int pre_time_window, ref double subordinate_ratio)
+            bool checkPerformance(int i, Account ac, int strategy_aplied_point, ref int select_time_window, ref double subordinate_ratio)
             {
-                if (ac.performance_data.total_capital_list.Count > select_time_window && i - strategy_aplied_point >= select_time_window)
+                if (ac.performance_data.total_capital_list.Count > select_time_window && i - strategy_aplied_point > select_time_window)
                 {
                     /*
                     var select_current_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i];
