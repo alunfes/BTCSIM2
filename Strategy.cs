@@ -330,6 +330,10 @@ namespace BTCSIM2
                     ad = placeNanpinOrder(i, best_id, ad, ref para_pt, ref para_lc, ref para_ma_term, ref para_nanpin_timing, ref para_nanpin_lot);
                     strategy_aplied_point = i;
                 }
+                else
+                {
+                    ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
+                }
             }
             else
             {
@@ -397,26 +401,12 @@ namespace BTCSIM2
 
             /*
              * 切り替えタイミング：
-             * ->過去x時間(select_time_window)における時間あたりのplが、採用開始前のy時間(pre_time_window)の時間あたりplよりもz％(subordinate_ratio)以上劣後した場合。
+             * ->過去x時間(select_time_window)における時間あたりのplが、z％(subordinate_ratio)以下になった場合。
              */
             bool checkPerformance(int i, Account ac, int strategy_aplied_point, ref int select_time_window, ref double subordinate_ratio)
             {
                 if (ac.performance_data.total_capital_list.Count > select_time_window && i - strategy_aplied_point > select_time_window)
                 {
-                    /*
-                    var select_current_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i];
-                    var select_pre_total_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[i - select_time_window];
-                    var select_ave_pl = (select_current_total_capital - select_pre_total_capital) / Convert.ToDouble(select_time_window);
-
-                    var applied_current_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point];
-                    var applied_pre_capital = strategy_ac_list[current_selected_strategy].performance_data.total_capital_list[strategy_aplied_point - pre_time_window];
-                    var applied_ave_pl = (applied_current_capital - applied_pre_capital) / Convert.ToDouble(pre_time_window);
-
-                    if (select_ave_pl <= applied_ave_pl * (1.0 - subordinate_ratio))
-                        return true;
-                    else
-                        return false;
-                    */
                     var select_current_total_capital = ac.performance_data.total_capital_list[i];
                     var select_pre_total_capital = ac.performance_data.total_capital_list[i - select_time_window];
                     var change = (select_current_total_capital - select_pre_total_capital) / select_pre_total_capital;

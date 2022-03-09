@@ -33,7 +33,6 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> para_rapid_side_change_ratio { get; set; }
 
         public ConcurrentDictionary<int, int> select_timing_time_window { get; set; }
-        public ConcurrentDictionary<int, int> select_timing_pre_time_window { get; set; }
         public ConcurrentDictionary<int, double> select_timing_subordinate_ratio { get; set; }
         public ConcurrentDictionary<int, int> select_strategy_time_window { get; set; }
 
@@ -62,7 +61,6 @@ namespace BTCSIM2
             para_nanpin_lot = new ConcurrentDictionary<int, List<double>>();
 
             select_timing_time_window = new ConcurrentDictionary<int, int>();
-            //select_timing_pre_time_window = new ConcurrentDictionary<int, int>();
             select_timing_subordinate_ratio = new ConcurrentDictionary<int, double>();
             select_strategy_time_window = new ConcurrentDictionary<int, int>();
         }
@@ -82,7 +80,6 @@ namespace BTCSIM2
         {
             readStrategyData(select_strategy_ids);
             select_timing_time_window = generateTimingWindow();
-            //select_timing_pre_time_window = generateTimingWindow();
             select_strategy_time_window = generateTimingWindow();
             select_timing_subordinate_ratio = generateSubordinateRatio();
             var selected_param_combination = generateParamIndCombination(num_opt); //[select_timing_time_window, select_timing_subordinate_ratio, select_strategy_time_window]
@@ -138,9 +135,8 @@ namespace BTCSIM2
                     ac_list[i].performance_data.window_pl_ratio.ToString() + "," +
                     Convert.ToString(ac_list[i].passsing_info_from_sim["num select change"]) + "," +
                     select_timing_time_window[selected_param_combination[i][0]].ToString() + "," +
-                    //select_timing_pre_time_window[selected_param_combination[i][1]].ToString() + "," +
-                    select_strategy_time_window[selected_param_combination[i][3]].ToString() + "," +
-                    select_timing_subordinate_ratio[selected_param_combination[i][2]].ToString());
+                    select_strategy_time_window[selected_param_combination[i][2]].ToString() + "," +
+                    select_timing_subordinate_ratio[selected_param_combination[i][1]].ToString());
                     sw.WriteLine(res_write_contents[i]);
                     n++;
                     progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt), 2);
@@ -253,14 +249,13 @@ namespace BTCSIM2
 
 
 
-        //[select_timing_time_window, select_timing_pre_time_window, select_timing_subordinate_ratio, select_strategy_time_window]
+        //[select_timing_time_window, select_timing_subordinate_ratio, select_strategy_time_window]
         private ConcurrentDictionary<int, List<int>> generateParamIndCombination(int num)
         {
             var res = new ConcurrentDictionary<int, List<int>>();
             var ran = new Random();
             for (int i = 0; i < num; i++)
             {
-                //var ind_combi = new List<int> { ran.Next(0, select_timing_time_window.Count), ran.Next(0, select_timing_pre_time_window.Count), ran.Next(0, select_timing_subordinate_ratio.Count), ran.Next(0, select_strategy_time_window.Count)};
                 var ind_combi = new List<int> { ran.Next(0, select_timing_time_window.Count), ran.Next(0, select_timing_subordinate_ratio.Count), ran.Next(0, select_strategy_time_window.Count) };
                 res.TryAdd(i, ind_combi);
             }
