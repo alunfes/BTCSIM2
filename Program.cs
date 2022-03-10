@@ -207,7 +207,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("optimize nanpin strategy parameter");
                 var o = new OptNanpin();
-                o.startOptMADivNanpin(from, to, leveraged_or_fixed_trading, num_opt_calc);
+                o.startOptMADivNanpin(from, to, leveraged_or_fixed_trading, num_opt_calc, true);
             }
             else if (key == "4")
             {
@@ -473,7 +473,7 @@ namespace BTCSIM2
                 while(true)
                 {
                     var o = new OptNanpin();
-                    o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num);
+                    o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num, false);
                     readOptData(0);
                     var sim_to = current_to + sim_term < MarketData.Close.Count - 1 ? current_to + sim_term : MarketData.Close.Count - 1;
                     ac = dosim(current_to, sim_to, ac);

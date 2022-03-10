@@ -71,12 +71,12 @@ namespace BTCSIM2
 
 
 
-        public void startOptMADivNanpin(int from, int to, string lev_fixed_trading, int num_opt_calc)
+        public void startOptMADivNanpin(int from, int to, string lev_fixed_trading, int num_opt_calc, bool display)
         {
             initializer();
             var opt_para_gen = new OptNanpinParaGenerator();
-            //opt_para_gen.generateParameters(0.005, 0.1, 0.005, 0.1, 15, num_opt_calc);
-            opt_para_gen.generateParametersAllPriceNanpin(0.005, 0.1, 0.005, 0.1, num_opt_calc);
+            opt_para_gen.generateParameters(0.005, 0.1, 0.005, 0.1, 15, num_opt_calc);
+            //opt_para_gen.generateParametersAllPriceNanpin(0.005, 0.1, 0.005, 0.1, num_opt_calc);
             //do optimization search
             using (StreamWriter writer = new StreamWriter("opt nanpin.csv", false))
             using (var sw = TextWriter.Synchronized(writer))
@@ -135,11 +135,13 @@ namespace BTCSIM2
                     sw.WriteLine(res_write_contents[i]);
                     n++;
                     progress = Math.Round(100.0 * n / Convert.ToDouble(num_opt_calc), 2);
-                    Console.WriteLine(n.ToString() +"/"+num_opt_calc.ToString() + " - " + progress.ToString() + "%"+
-                        ": pl ratio="+ ac_list[i].performance_data.total_pl_ratio.ToString() +
-                        ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
-                        ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
-
+                    if (display)
+                    {
+                        Console.WriteLine(n.ToString() + "/" + num_opt_calc.ToString() + " - " + progress.ToString() + "%" +
+                            ": pl ratio=" + ac_list[i].performance_data.total_pl_ratio.ToString() +
+                            ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
+                            ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
+                    }
                     while (ac_list.TryRemove(i, out var d) == false) ;
                     while (res_write_contents.TryRemove(i, out var dd)) ;
                     //ac_list.TryRemove(i, out var d);

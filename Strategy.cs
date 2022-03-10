@@ -326,11 +326,10 @@ namespace BTCSIM2
             {
                 if (ac.order_data.getNumOrders() == 0) //new entry
                 {
-                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window);
+                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window, current_selected_strategy);
                     ad = placeNanpinOrder(i, best_id, ad, ref para_pt, ref para_lc, ref para_ma_term, ref para_nanpin_timing, ref para_nanpin_lot);
-                    strategy_aplied_point = i;
                 }
-                else
+                else //cancel all remaining orders after pt / lc
                 {
                     ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
                 }
@@ -340,16 +339,11 @@ namespace BTCSIM2
                 var if_change = checkPerformance(i, ac, strategy_aplied_point, ref select_time_window, ref subordinate_ratio);
                 if (if_change) //change current strategy
                 {
-                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window);
-                    if (best_id == current_selected_strategy)
-                    {
-                        Console.WriteLine("same id was selected.");
-                    }
+                    best_id = getBestStrategy(i, strategy_ac_list, ref strategy_time_window, current_selected_strategy);
                     ad.add_action("cancel", "", "", 0, 0, 0, 0, -1, "cancel all orders");
                     ad.add_action("ptlc", "", "", 0, 0, 0, 0, -1, "cancel pt lc order");
                     ad.add_action("entry", ac.holding_data.holding_side == "buy" ? "sell" : "buy", "market", 0, ac.holding_data.holding_size, 0, 0, -1, "exit order as new strategy was selected");
                     ad = placeNanpinOrder(i, best_id, ad, ref para_pt, ref para_lc, ref para_ma_term, ref para_nanpin_timing, ref para_nanpin_lot);
-                    strategy_aplied_point = i;
                 }
                 else //continue with the current strategy
                 {
@@ -387,15 +381,19 @@ namespace BTCSIM2
              * どの戦略に切り替えるべきか：
              * ->過去x時間(strategy time window)におけるplが一番高いもの。（plが高くても直近でマイナスパフォーマンスになっているものを避ける工夫が必要）
              */
-            int getBestStrategy(int i, List<Account> strategy_ac_list, ref int strategy_time_window)
+            int getBestStrategy(int i, List<Account> strategy_ac_list, ref int strategy_time_window, int current_strategy_id)
             {
                 var pl_list = new List<double>();
+                var res = -1;
                 for(int n=0; n<strategy_ac_list.Count; n++)
                 {
                     var latest_total_capital = strategy_ac_list[n].performance_data.total_capital_list[i];
                     var pre_total_capital = strategy_ac_list[n].performance_data.total_capital_list[i-strategy_time_window];
                     pl_list.Add((latest_total_capital - pre_total_capital) / pre_total_capital);
                 }
+                res = pl_list.IndexOf(pl_list.Max());
+                if (res != current_strategy_id)
+                    strategy_aplied_point = i;
                 return pl_list.IndexOf(pl_list.Max());
             }
 

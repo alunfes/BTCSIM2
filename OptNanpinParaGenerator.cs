@@ -204,6 +204,7 @@ namespace BTCSIM2
             var reskeys = new List<string>(res.Keys);
             for (int i = 0; i < reskeys.Count; i++)
                 true_res.TryAdd(i, res[reskeys[i]]);
+            Console.WriteLine(num_select + " parameters are selected from pupuration num of " + Math.Round((pt.Count * lc.Count * num_split.Count * ma_term.Count * min_lot.Count * strategy.Count * rapid_side.Count) / 1000000.0, 1) + "m");
             return true_res;
         }
 
