@@ -39,6 +39,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> opt_sharp_ratio { get; set; }
         public ConcurrentDictionary<int, double> opt_total_capital_gradient { get; set; }
         public ConcurrentDictionary<int, double> opt_window_pl_ratio { get; set; }
+        public ConcurrentDictionary<int, double> opt_euclid_distance { get; set; }
 
         public ConcurrentDictionary<int, double> para_pt { get; set; }
         public ConcurrentDictionary<int, double> para_lc { get; set; }
@@ -93,6 +94,7 @@ namespace BTCSIM2
             opt_sharp_ratio = new ConcurrentDictionary<int, double>();
             opt_total_capital_gradient = new ConcurrentDictionary<int, double>();
             opt_window_pl_ratio = new ConcurrentDictionary<int, double>();
+            opt_euclid_distance = new ConcurrentDictionary<int, double>();
         }
 
 
@@ -201,15 +203,16 @@ namespace BTCSIM2
                         opt_sharp_ratio[target_no] = Convert.ToDouble(ele[7]);
                         opt_total_capital_gradient[target_no] = Convert.ToDouble(ele[8]);
                         opt_window_pl_ratio[target_no] = Convert.ToDouble(ele[9]);
+                        opt_euclid_distance[target_no] = Convert.ToDouble(ele[10]);
 
-                        para_pt[target_no] = Convert.ToDouble(ele[10]);
-                        para_lc[target_no] = Convert.ToDouble(ele[11]);
-                        para_num_split[target_no] = Convert.ToInt32(ele[12]);
-                        para_ma_term[target_no] = Convert.ToInt32(ele[14]);
-                        para_strategy[target_no] = Convert.ToInt32(ele[15]);
-                        para_rapid_side_change_ratio[target_no] = Convert.ToDouble(ele[16]);
-                        para_nanpin_timing[target_no] = ele[17].Split(':').Select(double.Parse).ToArray().ToList();
-                        para_nanpin_lot[target_no] = ele[18].Split(':').Select(double.Parse).ToArray().ToList();
+                        para_pt[target_no] = Convert.ToDouble(ele[11]);
+                        para_lc[target_no] = Convert.ToDouble(ele[12]);
+                        para_num_split[target_no] = Convert.ToInt32(ele[13]);
+                        para_ma_term[target_no] = Convert.ToInt32(ele[15]);
+                        para_strategy[target_no] = Convert.ToInt32(ele[16]);
+                        para_rapid_side_change_ratio[target_no] = Convert.ToDouble(ele[17]);
+                        para_nanpin_timing[target_no] = ele[18].Split(':').Select(double.Parse).ToArray().ToList();
+                        para_nanpin_lot[target_no] = ele[19].Split(':').Select(double.Parse).ToArray().ToList();
                         target_no++;
                     }
                     no++;
@@ -220,8 +223,8 @@ namespace BTCSIM2
             using (var sw = TextWriter.Synchronized(writer))
             {
                 sw.WriteLine("No,pt,lc,ma term,strategy id,rapid side change ratio,nanpin timing,nanpin lot,opt total pl,opt realized pl,opt realized pl sd,opt total capital sd,opt num trade,opt win rate," +
-                    "opt sharp ratio,opt total capital gradient,opt window pl ratio,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
-                    "test sharp ratio,test total capital gradient,test window pl ratio");
+                    "opt sharp ratio,opt total capital gradient,opt window pl ratio,opt euclid distance,test total pl,test realized pl,test realized pl sd,test total capital sd,test num trade,test win rate," +
+                    "test sharp ratio,test total capital gradient,test window pl ratio,euclid distance");
                 var progress = 0.0;
                 var no = 0;
                 var ac_list = new ConcurrentDictionary<int, Account>();
@@ -237,6 +240,7 @@ namespace BTCSIM2
                             para_nanpin_lot[i],
                             para_ma_term[i],
                             para_rapid_side_change_ratio[i]));
+                    /*
                     res_total_capital.TryAdd(i, ac_list[i].performance_data.total_capital);
                     res_total_pl.TryAdd(i, ac_list[i].performance_data.total_pl);
                     res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
@@ -258,25 +262,26 @@ namespace BTCSIM2
                     res_sharp_ratio.TryAdd(i, ac_list[i].performance_data.sharp_ratio);
                     res_total_capital_gradient.TryAdd(i, ac_list[i].performance_data.total_capital_gradient);
                     res_window_pl_ratio.TryAdd(i, ac_list[i].performance_data.window_pl_ratio);
-
+                    */
                     res_write_contents.TryAdd(i, i.ToString() + "," + para_pt[i].ToString() + "," +
                     para_lc[i].ToString() + "," + para_ma_term[i].ToString() + "," + para_strategy[i].ToString() +","+para_rapid_side_change_ratio[i].ToString()+","+
                     string.Join(":", para_nanpin_timing[i]) + "," + string.Join(":", para_nanpin_lot[i]) + "," +
                     opt_total_pl[i].ToString() + "," + opt_realized_pl[i].ToString() + "," +
                     opt_realized_pl_sd[i].ToString() + "," + opt_total_capital_sd[i].ToString() + "," +
                     opt_num_trade[i].ToString() + "," + opt_win_rate[i].ToString() + "," +
-                    opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," + opt_window_pl_ratio[i].ToString()+","+
-                    res_total_pl[i].ToString() + "," + res_realized_pl[i].ToString() + "," +
-                    res_realized_pl_sd[i].ToString() + "," + res_total_capital_sd[i].ToString() + "," +
-                    res_num_trade[i].ToString() + "," + res_win_rate[i].ToString() + "," +
-                    res_sharp_ratio[i].ToString() + "," + res_total_capital_gradient[i].ToString() +","+
-                    res_window_pl_ratio[i].ToString());
+                    opt_sharp_ratio[i].ToString() + "," + opt_total_capital_gradient[i].ToString() + "," + opt_window_pl_ratio[i].ToString()+","+ opt_euclid_distance[i].ToString() +","+
+                    ac_list[i].performance_data.total_pl.ToString() + "," + ac_list[i].performance_data.realized_pl.ToString() + "," +
+                    ac_list[i].performance_data.realized_pl_ratio_sd.ToString() + "," + ac_list[i].performance_data.total_capital_sd.ToString() + "," +
+                    ac_list[i].performance_data.num_trade.ToString() + "," + ac_list[i].performance_data.win_rate.ToString() + "," +
+                    ac_list[i].performance_data.sharp_ratio.ToString() + "," + ac_list[i].performance_data.total_capital_gradient.ToString() +","+
+                    ac_list[i].performance_data.window_pl_ratio.ToString() + ","+ ac_list[i].performance_data.euclidean_dis.ToString()
+                    );
                     progress = Math.Round(100.0 * Convert.ToDouble(no) / Convert.ToDouble(para_lc.Count), 2);
                     sw.WriteLine(res_write_contents[i]);
                     Console.WriteLine(no.ToString() + "/" + para_lc.Count.ToString() + " - " + progress.ToString() + "%" +
-                        ": test total pl=" + res_total_pl[i].ToString()+
-                        ", test sharp ratio="+res_sharp_ratio[i].ToString()+
-                        ", test win rate="+res_win_rate[i].ToString());
+                        ": test total pl=" + ac_list[i].performance_data.total_pl.ToString()+
+                        ", test sharp ratio="+ac_list[i].performance_data.sharp_ratio.ToString()+
+                        ", test win rate="+ac_list[i].performance_data.win_rate.ToString());
                     ac_list.TryRemove(i, out var d);
                     res_write_contents.TryRemove(i, out var dd);
                     no++;

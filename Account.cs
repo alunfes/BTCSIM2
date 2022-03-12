@@ -48,6 +48,7 @@ namespace BTCSIM2
         public double sharp_ratio { get; set; }
         public double ave_daily_pl { get; set; }
         public double daily_pl_sd { get; set; }
+        public double euclidean_dis { get; set; } //euclidean distance of ideal pl line and actual pl line
 
         public PerformanceData(double initial_cap)
         {
@@ -86,6 +87,7 @@ namespace BTCSIM2
             window_pl_ratio = 0.0;
             ave_daily_pl = 0.0;
             daily_pl_sd = 0.0;
+            euclidean_dis = 0.0;
         }
     }
 
@@ -483,6 +485,18 @@ namespace BTCSIM2
                 performance_data.window_pl_ratio = 0.0;
         }
 
+        private void calcEquclideanDistance()
+        {
+            var ideal_change_step = performance_data.total_pl > 0 ? performance_data.total_pl / Convert.ToDouble(performance_data.total_capital_list.Count) : -performance_data.total_pl / Convert.ToDouble(performance_data.total_capital_list.Count);
+            var ideal_capital = initial_capital;
+            var data = performance_data.total_capital_list.ToList();
+            for (int i=0; i<data.Count; i++)
+            {
+                ideal_capital += ideal_change_step;
+                performance_data.euclidean_dis += Math.Pow(data[i].Value - ideal_capital, 2);
+            }
+            performance_data.euclidean_dis = Math.Sqrt(performance_data.euclidean_dis);
+        }
 
 
 
@@ -614,6 +628,7 @@ namespace BTCSIM2
                 performance_data.win_rate = Math.Round(Convert.ToDouble(performance_data.num_win) / Convert.ToDouble(performance_data.num_trade), 4);
             calc_sharp_ratio();
             calcDDPeriodRatio();
+            calcEquclideanDistance();
             log_data.close_log.Add(MarketData.Close[i]);
             if (log_data.buy_points.Keys.Contains(i) == false)
                 log_data.buy_points[i] = 0;

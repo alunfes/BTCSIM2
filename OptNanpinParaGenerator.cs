@@ -62,6 +62,7 @@ namespace BTCSIM2
                 para_nanpin_timing.TryAdd(i, lot_timing[0][0].ToList());
                 para_nanpin_lot.TryAdd(i, lot_timing[0][1].ToList());
             }
+            Console.WriteLine(num_select_params + " parameters are selected from pupuration num of " + Math.Round((pt.Count * lc.Count * ma_term.Count * strategy.Count * rapid_side.Count) / 1000000.0, 1) + "m");
         }
 
 

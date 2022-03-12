@@ -26,6 +26,7 @@ namespace BTCSIM2
         public ConcurrentDictionary<int, double> res_realized_pl_sd { get; set; }
         public ConcurrentDictionary<int, double> res_total_capital_sd { get; set; }
         public ConcurrentDictionary<int, double> res_window_pl_ratio { get; set; }
+        public ConcurrentDictionary<int, double> res_euclid_distance { get; set; }
         public ConcurrentDictionary<int, string> res_write_contents { get; set; }
 
 
@@ -54,6 +55,7 @@ namespace BTCSIM2
             res_realized_pl_sd = new ConcurrentDictionary<int, double>();
             res_total_capital_sd = new ConcurrentDictionary<int, double>();
             res_window_pl_ratio = new ConcurrentDictionary<int, double>();
+            res_euclid_distance = new ConcurrentDictionary<int, double>();
             res_write_contents = new ConcurrentDictionary<int, string>();
             para_pt = new ConcurrentDictionary<int, double>();
             para_lc = new ConcurrentDictionary<int, double>();
@@ -83,7 +85,7 @@ namespace BTCSIM2
             {
                 var progress = 0.0;
                 var n = 0.0;
-                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,window pl ratio,pt,lc,num_split,func,ma_term,strategy id,rapid side change ratio,nanpin timing,lot splits");
+                sw.WriteLine("No.,num trade,win rate,total pl,realized pl,realzied pl sd,total capital sd,sharp ratio,total capital gradient,window pl ratio,euclid distance,pt,lc,num_split,func,ma_term,strategy id,rapid side change ratio,nanpin timing,lot splits");
                 var ac_list = new ConcurrentDictionary<int, Account>();
                 Parallel.For(0, num_opt_calc, i =>
                 {
@@ -97,6 +99,7 @@ namespace BTCSIM2
                         opt_para_gen.para_nanpin_lot[i],
                         opt_para_gen.para_ma_term[i],
                         opt_para_gen.para_rapid_side_change_ratio[i]));
+                    /*
                     res_total_capital.TryAdd(i,ac_list[i].performance_data.total_capital);
                     res_total_pl_ratio.TryAdd(i, ac_list[i].performance_data.total_pl_ratio);
                     res_win_rate.TryAdd(i, ac_list[i].performance_data.win_rate);
@@ -114,6 +117,8 @@ namespace BTCSIM2
                     res_realized_pl_sd.TryAdd(i,ac_list[i].performance_data.realized_pl_ratio_sd);
                     res_total_capital_sd.TryAdd(i, ac_list[i].performance_data.total_capital_sd);
                     res_window_pl_ratio.TryAdd(i, ac_list[i].performance_data.window_pl_ratio);
+                    res_euclid_distance.TryAdd(i, ac_list[i].performance_data.euclidean_dis);
+                    */
                     res_write_contents.TryAdd(i, i.ToString() + "," + ac_list[i].performance_data.num_trade.ToString() + "," +
                     ac_list[i].performance_data.win_rate.ToString() + "," +
                     ac_list[i].performance_data.total_pl.ToString() + "," +
@@ -123,6 +128,7 @@ namespace BTCSIM2
                     ac_list[i].performance_data.sharp_ratio.ToString() + "," +
                     ac_list[i].performance_data.total_capital_gradient.ToString() + "," +
                     ac_list[i].performance_data.window_pl_ratio.ToString() + "," +
+                    ac_list[i].performance_data.euclidean_dis.ToString()+","+
                     opt_para_gen.para_pt[i].ToString() + "," +
                     opt_para_gen.para_lc[i].ToString() + "," +
                     opt_para_gen.para_num_split[i].ToString() + "," +
@@ -142,10 +148,10 @@ namespace BTCSIM2
                             ", sharp ratio=" + ac_list[i].performance_data.sharp_ratio.ToString() +
                             ", win rate=" + ac_list[i].performance_data.win_rate.ToString());
                     }
-                    while (ac_list.TryRemove(i, out var d) == false) ;
-                    while (res_write_contents.TryRemove(i, out var dd)) ;
-                    //ac_list.TryRemove(i, out var d);
-                    //res_write_contents.TryRemove(i, out var dd);
+                    //while (ac_list.TryRemove(i, out var d) == false) ;
+                    //while (res_write_contents.TryRemove(i, out var dd)) ;
+                    ac_list.TryRemove(i, out var d);
+                    res_write_contents.TryRemove(i, out var dd);
                 });
             }
         }

@@ -87,7 +87,7 @@ namespace BTCSIM2
             var to = MarketData.Close.Count - 200000;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
-            var num_opt_calc = 100;
+            var num_opt_calc = 30;
             var selected_opt_ids = new List<int>() { 0,5,10,15,20};
 
 
