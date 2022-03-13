@@ -349,13 +349,13 @@ namespace BTCSIM2
                             sr.ReadLine();
                         data = sr.ReadLine();
                         var ele = data.Split(',');
-                        pt = Convert.ToDouble(ele[10]);
-                        lc = Convert.ToDouble(ele[11]);
-                        ma_term = Convert.ToInt32(ele[14]);
-                        strategy = Convert.ToInt32(ele[15]);
-                        rapid_side = Convert.ToDouble(ele[16]);
-                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
-                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
+                        pt = Convert.ToDouble(ele[11]);
+                        lc = Convert.ToDouble(ele[12]);
+                        ma_term = Convert.ToInt32(ele[15]);
+                        strategy = Convert.ToInt32(ele[16]);
+                        rapid_side = Convert.ToDouble(ele[17]);
+                        nanpin_timing = ele[18].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[19].Split(':').Select(double.Parse).ToList();
                         Console.WriteLine("Opt pl=" + ele[3] + ", opt num trade=" + ele[1] + ", opt win rate=" + ele[2]);
 
                     }
@@ -459,12 +459,12 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Conti Opt Nanpin Sim");
 
-                var train_term = 200000;
-                var sim_term = 100000;
+                var train_term = 10000;
+                var sim_term = 10000;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var current_from = 1000000;
                 var current_to = current_from + train_term;
-                var num = 50;
+                var num = 30;
 
                 double pt, lc, rapid_side_change_ratio;
                 int ma_term, strategy_id;
@@ -474,7 +474,8 @@ namespace BTCSIM2
                 {
                     var o = new OptNanpin();
                     o.startOptMADivNanpin(current_from, current_to, leveraged_or_fixed_trading, num, false);
-                    readOptData(0);
+                    //readOptData(0);
+                    readOptEuclidData(10);
                     var sim_to = current_to + sim_term < MarketData.Close.Count - 1 ? current_to + sim_term : MarketData.Close.Count - 1;
                     ac = dosim(current_to, sim_to, ac);
                     Console.WriteLine("Loop No.=" + num_loop);
@@ -492,6 +493,7 @@ namespace BTCSIM2
                     }
                 }
 
+
                 void readOptData(int opt_ind)
                 {
                     var rs = new ReadSim();
@@ -503,15 +505,61 @@ namespace BTCSIM2
                             sr.ReadLine();
                         data = sr.ReadLine();
                         var ele = data.Split(',');
-                        pt = Convert.ToDouble(ele[10]);
-                        lc = Convert.ToDouble(ele[11]);
-                        ma_term = Convert.ToInt32(ele[14]);
-                        strategy_id = Convert.ToInt32(ele[15]);
-                        rapid_side_change_ratio = Convert.ToDouble(ele[16]);
-                        nanpin_timing = ele[17].Split(':').Select(double.Parse).ToList();
-                        nanpin_lot = ele[18].Split(':').Select(double.Parse).ToList();
+                        pt = Convert.ToDouble(ele[11]);
+                        lc = Convert.ToDouble(ele[12]);
+                        ma_term = Convert.ToInt32(ele[15]);
+                        strategy_id = Convert.ToInt32(ele[16]);
+                        rapid_side_change_ratio = Convert.ToDouble(ele[17]);
+                        nanpin_timing = ele[18].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[19].Split(':').Select(double.Parse).ToList();
                     }
                 }
+
+                void readOptEuclidData(int inscope_best_opt)
+                {
+                    var index_list = new List<int>();
+                    var pl_list = new List<double>();
+                    var euclid_list = new List<double>();
+                    var n = 0;
+                    using (var sr = new StreamReader("opt nanpin.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        while ((data = sr.ReadLine()) != null)
+                        {
+                            var ele = data.Split(',');
+                            index_list.Add(n);
+                            pl_list.Add(Convert.ToDouble(ele[3]));
+                            euclid_list.Add(Convert.ToDouble(ele[10]));
+                            n++;
+                        }
+                    }
+                    //detect best 30 opt pl index
+                    var cp_best_pl = new List<double>(pl_list);
+                    var sorted_pl = cp_best_pl.OrderBy(a => -a);
+                    var best_pl_index = new List<int>();
+                    foreach (var d in sorted_pl)
+                        best_pl_index.Add(pl_list.IndexOf(d));
+                    //get euclid dis of best opt pl
+                    var best_euclid = new List<double>();
+                    for (int i = 0; i < best_pl_index.Count; i++)
+                        best_euclid.Add(euclid_list[best_pl_index[i]]);
+                    var min_euclid_index = euclid_list.IndexOf(best_euclid.Min());
+                    using (var sr = new StreamReader("opt nanpin.csv"))
+                    {
+                        var data = sr.ReadLine();
+                        for (int i = 0; i < min_euclid_index+1; i++)
+                            data = sr.ReadLine();
+                        var ele = data.Split(',');
+                        pt = Convert.ToDouble(ele[11]);
+                        lc = Convert.ToDouble(ele[12]);
+                        ma_term = Convert.ToInt32(ele[15]);
+                        strategy_id = Convert.ToInt32(ele[16]);
+                        rapid_side_change_ratio = Convert.ToDouble(ele[17]);
+                        nanpin_timing = ele[18].Split(':').Select(double.Parse).ToList();
+                        nanpin_lot = ele[19].Split(':').Select(double.Parse).ToList();
+                    }
+                }
+
                 Account dosim(int from, int to, Account ac)
                 {
                     var sim = new Sim();

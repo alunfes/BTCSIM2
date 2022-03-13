@@ -495,7 +495,7 @@ namespace BTCSIM2
                 ideal_capital += ideal_change_step;
                 performance_data.euclidean_dis += Math.Pow(data[i].Value - ideal_capital, 2);
             }
-            performance_data.euclidean_dis = Math.Sqrt(performance_data.euclidean_dis);
+            performance_data.euclidean_dis = Math.Sqrt(performance_data.euclidean_dis) / Convert.ToDouble(data.Count);
         }
 
 
