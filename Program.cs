@@ -31,15 +31,14 @@ namespace BTCSIM2
             Console.WriteLine("max_dd=" + ac.performance_data.max_dd);
             Console.WriteLine("max_pl=" + ac.performance_data.max_pl);
             Console.WriteLine("ave_holding_period=" + ac.holding_data.holding_period_list.Average());
-            Console.WriteLine("total_capital_gradient=" + ac.performance_data.total_capital_gradient);
-            Console.WriteLine("total_capital_gradient=" + ac.performance_data.window_pl_ratio);
-            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Total Capital Gradient", "Window PL Ratio" };
+            Console.WriteLine("euclid distance=" + ac.performance_data.euclidean_dis);
+            var table_labels = new List<string>() { "PL Ratio", "Num Trade", "Win Rate", "Daily Ave Return", "Daily Return SD", "Sharp Ratio", "Max DD", "Max PL", "Ave Buy PL", "Ave Sell PL", "Ave Holding Period", "Num Force Exit", "Euclidean Distance" };
             var table_data = new List<string>() {Math.Round(ac.performance_data.total_pl_ratio,4).ToString(), ac.performance_data.num_trade.ToString(), Math.Round(ac.performance_data.win_rate,4).ToString(),
                 ac.performance_data.ave_daily_pl.ToString(), ac.performance_data.daily_pl_sd.ToString(), ac.performance_data.sharp_ratio.ToString(), Math.Round(ac.performance_data.max_dd,4).ToString(),
             Math.Round(ac.performance_data.max_pl,4).ToString(), ac.performance_data.buy_pl_list.Count > 0 ? Math.Round(ac.performance_data.buy_pl_list.Average(), 4).ToString() : "0",
                 ac.performance_data.sell_pl_list.Count >0 ? Math.Round(ac.performance_data.sell_pl_list.Average(), 4).ToString() : "0",
                 ac.holding_data.holding_period_list.Count >0 ? Math.Round(ac.holding_data.holding_period_list.Average(),1).ToString() : "0",
-                ac.performance_data.num_force_exit.ToString(), ac.performance_data.total_capital_gradient.ToString(), ac.performance_data.window_pl_ratio.ToString()};
+                ac.performance_data.num_force_exit.ToString(), ac.performance_data.euclidean_dis.ToString()};
             LineChart.DisplayLineChart3(ac.performance_data.total_capital_list.Values.ToList(), ac.performance_data.log_close, ac.performance_data.num_trade_list, table_labels, table_data, title + ": from=" + ac.start_ind.ToString() + ", to=" + ac.end_ind.ToString());
             System.Diagnostics.Process.Start(@"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", @"./line_chart.html");
         }
@@ -77,14 +76,14 @@ namespace BTCSIM2
             stopWatch.Start();
             Console.WriteLine("started program.");
             RandomSeed.initialize();
-            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 180, 190, 200, 220, 240, 260, 280 };
-            //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 14};
+            //List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 180, 190, 200, 220, 240, 260, 280 };
+            List<int> terms = new List<int>() { 2, 3, 4, 5, 7, 10, 15, 20, 25, 30};
             MarketData.initializer(terms);
 
-            var from = 510000;
+            var from = 1000;
             //var from = MarketData.Close.Count - 100000;
             //var to = 500000;
-            var to = MarketData.Close.Count - 200000;
+            var to = MarketData.Close.Count - 1;
             var leveraged_or_fixed_trading = "leveraged";
             //var leveraged_or_fixed_trading = "fixed";
             var num_opt_calc = 30;
@@ -293,15 +292,15 @@ namespace BTCSIM2
             else if (key == "6")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpintiming = "0.0038:0.0075:0.0113:0.015:0.0188:0.0226:0.0263:0.0301:0.0339:0.0376:0.0414:0.0451";
-                var nanpinlot = "0.001:0.001646:0.002709:0.00446:0.00734:0.012082:0.019887:0.032735:0.053881:0.088689:0.145982:0.240286:0.39551";
+                var nanpintiming = "0.0041:0.0081:0.0122:0.0163:0.0204:0.0244:0.0285:0.0326:0.0367:0.0407:0.0448";
+                var nanpinlot = "0.021944:0.026826:0.032795:0.040092:0.049012:0.059917:0.073248:0.089545:0.109469:0.133825:0.1636:0.2";
                 var nanpin_timing = nanpintiming.Split(':').Select(a => double.Parse(a)).ToList();
                 var lot_splits = nanpinlot.Split(':').Select(a => double.Parse(a)).ToList();
-                var pt_ratio = 0.050;
-                var lc_ratio = 0.070;
-                var ma_term = 100;
+                var pt_ratio = 0.056;
+                var lc_ratio = 0.049;
+                var ma_term = 15;
                 var strategy_id = 1;
-                var rapid_side_change_ratio = 0.3;
+                var rapid_side_change_ratio = 0.88;
                 //var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();
@@ -459,7 +458,7 @@ namespace BTCSIM2
             {
                 Console.WriteLine("Conti Opt Nanpin Sim");
 
-                var train_term = 10000;
+                var train_term = 100000;
                 var sim_term = 10000;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var current_from = 1000000;
