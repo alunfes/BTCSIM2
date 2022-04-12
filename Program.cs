@@ -16,6 +16,7 @@ namespace BTCSIM2
     {
         private static void displaySimResult(Account ac, string title)
         {
+            ac.writePlLog();
             Console.WriteLine("pl=" + ac.performance_data.total_pl);
             Console.WriteLine("pl ratio=" + ac.performance_data.total_pl_ratio);
             Console.WriteLine("num trade=" + ac.performance_data.num_trade);
@@ -81,7 +82,7 @@ namespace BTCSIM2
             MarketData.initializer(terms);
 
             var from = 1000;
-            //var from = MarketData.Close.Count - 100000;
+            //var from = MarketData.Close.Count - 50000;
             //var to = 500000;
             var to = MarketData.Close.Count - 1;
             var leveraged_or_fixed_trading = "leveraged";
@@ -292,15 +293,15 @@ namespace BTCSIM2
             else if (key == "6")
             {
                 Console.WriteLine("MA div Nanpin PT/LC");
-                var nanpintiming = "0.0041:0.0081:0.0122:0.0163:0.0204:0.0244:0.0285:0.0326:0.0367:0.0407:0.0448";
-                var nanpinlot = "0.021944:0.026826:0.032795:0.040092:0.049012:0.059917:0.073248:0.089545:0.109469:0.133825:0.1636:0.2";
+                var nanpintiming = "0.008:0.016:0.024:0.0319:0.0399";
+                var nanpinlot = "0.07:0.09422:0.12682:0.1707:0.229762:0.30926";
                 var nanpin_timing = nanpintiming.Split(':').Select(a => double.Parse(a)).ToList();
                 var lot_splits = nanpinlot.Split(':').Select(a => double.Parse(a)).ToList();
-                var pt_ratio = 0.056;
-                var lc_ratio = 0.049;
-                var ma_term = 15;
-                var strategy_id = 1;
-                var rapid_side_change_ratio = 0.88;
+                var pt_ratio = 0.018;
+                var lc_ratio = 0.048;
+                var ma_term = 4;
+                var strategy_id = 0;
+                var rapid_side_change_ratio = 0.47;
                 //var contrarian = true;
                 var ac = new Account(leveraged_or_fixed_trading, false);
                 var sim = new Sim();

@@ -241,7 +241,9 @@ namespace BTCSIM2
         public DataTable log_data_table { get; set; }
         public List<double> total_pl_log { get; set; }
         public List<double> total_pl_ratio { get; set; }
+        public List<double> pl_log { get; set; }
         public List<double> close_log { get; set; }
+        public List<DateTimeOffset> dt { get; set; }
         public Dictionary<int, double> buy_points { get; set; }
         public Dictionary<int, double> sell_points { get; set; }
         public List<int> lc_points { get; set; }
@@ -275,7 +277,9 @@ namespace BTCSIM2
             log_data_set.Tables.Add(log_data_table);
             total_pl_log = new List<double>();
             total_pl_ratio = new List<double>();
+            pl_log = new List<double>();
             close_log = new List<double>();
+            dt = new List<DateTimeOffset>();
             buy_points = new Dictionary<int, double>();
             sell_points = new Dictionary<int, double>();
             pt_points = new List<int>();
@@ -596,6 +600,8 @@ namespace BTCSIM2
             log_data.add_log_data(i, MarketData.Dt[i].ToString(), "move to next", holding_data, order_data, performance_data);
 
             log_data.close_log.Add(MarketData.Close[i]);
+            log_data.dt.Add(MarketData.Dt[i]);
+            log_data.pl_log.Add(performance_data.total_pl);
             if (log_data.buy_points.Keys.Contains(i) == false)
                 log_data.buy_points[i] = 0;
             if (log_data.sell_points.Keys.Contains(i) == false)
@@ -630,6 +636,8 @@ namespace BTCSIM2
             calcDDPeriodRatio();
             calcEquclideanDistance();
             log_data.close_log.Add(MarketData.Close[i]);
+            log_data.dt.Add(MarketData.Dt[i]);
+            log_data.pl_log.Add(performance_data.total_pl);
             if (log_data.buy_points.Keys.Contains(i) == false)
                 log_data.buy_points[i] = 0;
             if (log_data.sell_points.Keys.Contains(i) == false)
@@ -637,6 +645,7 @@ namespace BTCSIM2
             //log_data.log_data_table.WriteXml("log.html", XmlWriteMode.DiffGram);
             if (log_data.silent_mode==false)
                 writeCsv("log.csv", log_data.log_data_table);
+            writePlLog();
         }
 
 
@@ -1080,5 +1089,37 @@ namespace BTCSIM2
                                      .Replace("\"", "\"\"") + "\"" : i.ToString()).ToArray();
             }
         }
+
+
+        public void writePlLog()
+        {
+            using (StreamWriter sw = new StreamWriter("pl_log.csv"))
+            {
+                sw.WriteLine("dt,close,pl,bp_sp");
+                var bp = new List<double>();
+                var sp = new List<double>();
+                var keys = log_data.buy_points.Keys.ToList();
+                var min = keys.Min();
+                var max = keys.Max();
+                for(int i=min; i<max+1; i++)
+                {
+                    bp.Add(log_data.buy_points[i]);
+                    sp.Add(log_data.sell_points[i]);
+                }
+
+                var bpsp = 0;
+                for (int i = 0; i < log_data.pl_log.Count; i++)
+                {
+                    if (bp[i] > 0)
+                        bpsp = 1;
+                    else if (sp[i] > 0)
+                        bpsp = -1;
+                    else
+                        bpsp = 0;
+                    sw.WriteLine(log_data.dt[i].ToString()+","+log_data.close_log[i].ToString() + ","+log_data.pl_log[i].ToString()+","+ bpsp.ToString());
+                }
+            }
+        }
+
     }
 }
